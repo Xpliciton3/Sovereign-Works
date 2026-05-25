@@ -1,6 +1,6 @@
 # GitHub Release Instructions — Sovereign Works v1.0.0
 
-Target repository: **https://github.com/xpliciton3/Imperium**
+Target repository: **https://github.com/Xpliciton3/Sovereign-Works**
 
 Release assets (upload both APKs):
 
@@ -19,7 +19,7 @@ If the repo does not exist yet:
 
 1. Open https://github.com/new
 2. Owner: **xpliciton3**
-3. Repository name: **Imperium**
+3. Repository name: **Sovereign-Works**
 4. Visibility: **Private** (recommended) or Public
 5. Do **not** add a README, .gitignore, or license (this project already has them)
 6. Create repository
@@ -55,13 +55,13 @@ From **Git Bash** or PowerShell:
 ```powershell
 cd C:\SovereignWorks
 & "C:\Program Files\Git\bin\git.exe" init
-& "C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/xpliciton3/Imperium.git
+& "C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Xpliciton3/Sovereign-Works.git
 ```
 
 If `origin` already exists, skip `remote add` or run:
 
 ```powershell
-& "C:\Program Files\Git\bin\git.exe" remote set-url origin https://github.com/xpliciton3/Imperium.git
+& "C:\Program Files\Git\bin\git.exe" remote set-url origin https://github.com/Xpliciton3/Sovereign-Works.git
 ```
 
 `.env` files and `dist/*.apk` are gitignored — keep Firebase keys local only.
@@ -142,8 +142,8 @@ gh release create v1.0.0 `
 
 Download URLs (after release is published):
 
-- Imperium: `https://github.com/xpliciton3/Imperium/releases/download/v1.0.0/sovereign-imperium-v1.0.0.apk`
-- Tending: `https://github.com/xpliciton3/Imperium/releases/download/v1.0.0/sovereign-tending-v1.0.0.apk`
+- Imperium: `https://github.com/Xpliciton3/Sovereign-Works/releases/download/v1.0.0/sovereign-imperium-v1.0.0.apk`
+- Tending: `https://github.com/Xpliciton3/Sovereign-Works/releases/download/v1.0.0/sovereign-tending-v1.0.0.apk`
 
 ---
 
@@ -152,7 +152,7 @@ Download URLs (after release is published):
 After builds succeed and both APKs are in `dist\`:
 
 ```
-Push SovereignWorks to https://github.com/xpliciton3/Imperium on branch main.
+Push SovereignWorks to https://github.com/Xpliciton3/Sovereign-Works on branch main.
 Do not commit .env files.
 Create GitHub release v1.0.0 attaching dist/sovereign-imperium-v1.0.0.apk and dist/sovereign-tending-v1.0.0.apk.
 Use gh release create with title "Sovereign Works v1.0.0".
