@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "The Tending",
+    "slug": "sovereign-tending",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "sovereign-tending",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "versionCode": 1,
+      "package": "com.sovereignworks.tending",
+      "adaptiveIcon": {
+        "backgroundColor": "#120A0E",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#120A0E"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

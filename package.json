@@ -1,0 +1,17 @@
+{
+  "name": "sovereign-works",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "imperium": "npm run start --workspace=apps/imperium",
+    "tending": "npm run start --workspace=apps/tending",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

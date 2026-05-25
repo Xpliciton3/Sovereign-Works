@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "The Imperium",
+    "slug": "sovereign-imperium",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "sovereign-imperium",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "versionCode": 1,
+      "package": "com.sovereignworks.imperium",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0D0D",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0D0D0D"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
