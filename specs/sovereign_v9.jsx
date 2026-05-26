@@ -1,4 +1,4 @@
-const { useState, useEffect } = React;
+import { useState, useEffect } from "react";
 
 const APP_VERSION = "v9.1"; // bump this string on every update to force tutorial reset
 
@@ -812,123 +812,6 @@ const RECIPES = {
   "Meal prep batch — double dinner":{ing:[{n:"Double all dinner quantities — portion and refrigerate",amt:"×2",unit:"pantry"}],steps:["Double the quantities of tonight's dinner recipe.","Eat one portion tonight.","Store the rest in airtight containers. Refrigerate up to 4 days.","Use for lunches throughout the week."]},
 };
 
-// ── CEREMONY & PRACTICE SUPPLIES — sourced from spec ──
-const CEREMONY_SUPPLIES = {
-  "The Rite of the Uncrowned": {
-    items: [
-      {n:"Frankincense resin tears (Boswellia serrata, food grade)",           amt:"small bag",    unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com) or Amazon — specify Boswellia serrata, food grade"},
-      {n:"Frankincense essential oil",                                          amt:"5–15ml bottle",unit:"ceremony", where:"Plant Therapy (planttherapy.com) — GC/MS tested, no MLM"},
-      {n:"Cedarwood essential oil",                                             amt:"5–15ml bottle",unit:"ceremony", where:"Plant Therapy (planttherapy.com)"},
-      {n:"Sandalwood essential oil",                                            amt:"2–5ml bottle", unit:"ceremony", where:"Eden's Garden (edensgarden.com) — sandalwood is expensive, small bottle is fine"},
-      {n:"Charcoal discs (for resin burning)",                                 amt:"1 pack",       unit:"ceremony", where:"Amazon — search 'charcoal discs incense', any brand"},
-      {n:"Heatproof vessel (brass or ceramic bowl)",                           amt:"1",            unit:"ceremony", where:"Amazon, any kitchen store, or thrift store — must hold heat"},
-      {n:"Carrier oil (fractionated coconut or jojoba)",                       amt:"2 oz",         unit:"ceremony", where:"Any pharmacy, Walmart, or Mountain Rose Herbs"},
-      {n:"Raw honey",                                                           amt:"small jar",    unit:"ceremony", where:"Any grocery store — local if available"},
-      {n:"Candle (pillar or taper, unscented)",                                amt:"1",            unit:"ceremony", where:"Any grocery or home goods store — real wax, not LED"},
-    ],
-  },
-  "Morning Clarity Tea (Imperium)": {
-    prep:"Boil water to 175°F (not full boil). Whisk matcha powder in a small amount of hot water until smooth paste forms — no dry clumps. Add remaining water. Add Lion's Mane powder and whisk again. Add fresh rosemary sprig. Steep 2 minutes. Remove rosemary. Drink without sweetener. This is a focus drink, not a comfort drink.",
-    items: [
-      {n:"Matcha (ceremonial grade)",         amt:"30–50g tin",  unit:"ceremony", where:"Ippodo Tea (ippodotea.com) or Amazon — ceremonial grade only"},
-      {n:"Lion's Mane mushroom powder",       amt:"100g bag",    unit:"ceremony", where:"Real Mushrooms (realmushrooms.com) — fruiting body only, not mycelium"},
-      {n:"Fresh rosemary",                    amt:"1 bunch",     unit:"produce",  where:"Any grocery store produce section"},
-    ],
-  },
-  "Rite Preparation Tea (Imperium)": {
-    prep:"Boil water. Add a small piece of food-grade frankincense resin to the water — it will dissolve partially and release the scent. Do not drink the resin pieces. Steep 5 minutes. Strain carefully. Add a small amount of raw honey. Drink slowly before the rite begins. This is a threshold ritual, not a wellness drink.",
-    items: [
-      {n:"Frankincense resin tears (Boswellia serrata, food grade)", amt:"small bag",  unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com)"},
-      {n:"Raw honey",                                                 amt:"small jar",  unit:"ceremony", where:"Any grocery store — local if available"},
-    ],
-  },
-  "The Rite of the Unspent": {
-    items: [
-      {n:"Rose essential oil",                       amt:"2–5ml bottle", unit:"ceremony", where:"Plant Therapy (planttherapy.com) — rose is expensive, 2ml is sufficient"},
-      {n:"Frankincense essential oil",               amt:"5–15ml bottle",unit:"ceremony", where:"Plant Therapy (planttherapy.com)"},
-      {n:"Carrier oil (fractionated coconut or jojoba)", amt:"2 oz",    unit:"ceremony", where:"Any pharmacy or Walmart"},
-      {n:"Candle (pillar or taper, unscented)",      amt:"1",           unit:"ceremony", where:"Any grocery or home goods store — real wax, not LED"},
-    ],
-  },
-  "Morning Grounding Tea (Tending)": {
-    prep:"Steep chamomile, lemon balm, and a small amount of lavender together in hot water 5–7 minutes. Strain. Add honey to taste. Drink sitting, not standing. Warm your hands on the cup before the first sip.",
-    items: [
-      {n:"Chamomile (loose dried)",      amt:"2 oz bag", unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com) or any grocery"},
-      {n:"Lemon balm (loose dried)",     amt:"2 oz bag", unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com)"},
-      {n:"Lavender (culinary grade, dried)", amt:"1 oz bag", unit:"ceremony", where:"Mountain Rose Herbs or Whole Foods — must be culinary grade"},
-      {n:"Raw honey",                    amt:"small jar",unit:"ceremony", where:"Any grocery store"},
-    ],
-  },
-  "Replenishment Tea (Tending)": {
-    prep:"Combine rose petals, hibiscus, and raspberry leaf. Steep in hot water 7–10 minutes. Strain. Add honey. Drink slowly during your replenishment session. This is not a functional blend — it is beautiful and it tastes good. That is reason enough.",
-    items: [
-      {n:"Dried rose petals (culinary grade)", amt:"1 oz bag", unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com)"},
-      {n:"Dried hibiscus",                     amt:"1 oz bag", unit:"ceremony", where:"Mountain Rose Herbs or any Latin grocery"},
-      {n:"Raspberry leaf (dried)",             amt:"1 oz bag", unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com)"},
-      {n:"Raw honey",                          amt:"small jar",unit:"ceremony", where:"Any grocery store"},
-    ],
-  },
-  "Keeper's Preparation Tea (Tending)": {
-    prep:"Gently crack the cardamom pods. Combine with rose petals. Steep in very hot water 10 minutes — not boiling, just off boil. Strain carefully. Add raw honey only after straining. Sip slowly. This should taste warm and specific — not generic herbal tea. Serve during Stage 6 of the Rite only.",
-    items: [
-      {n:"Dried rose petals (culinary grade)", amt:"1 tbsp",   unit:"ceremony", where:"Mountain Rose Herbs (mountainroseherbs.com)"},
-      {n:"Green cardamom pods",               amt:"small bag", unit:"ceremony", where:"Any grocery with a spice section or Indian grocery"},
-      {n:"Raw honey",                         amt:"small jar", unit:"ceremony", where:"Any grocery store"},
-    ],
-  },
-  "Tea Protocol — Fasting Window": {
-    prep:"Boil water. Pour over 1 peppermint tea bag or 1 tbsp loose dried peppermint. Steep 5 minutes. Remove bag or strain. Drink plain — no honey during the fast window.",
-    items: [
-      {n:"Peppermint tea bags or dried peppermint leaves", amt:"1 box or 1 oz", unit:"ceremony", where:"Any grocery store — Traditional Medicinals or Bigelow are fine"},
-    ],
-  },
-  "Tea Protocol — Afternoon": {
-    prep:"Green tea: water at 170–180°F, not boiling. Steep 1–2 minutes only — over-steeping makes it bitter. Black tea: boiling water, steep 3–4 minutes. Small splash of milk optional.",
-    items: [
-      {n:"Green tea bags (or loose leaf)", amt:"1 box", unit:"ceremony", where:"Any grocery store — Bigelow Green Tea or Harney & Sons"},
-      {n:"Black tea bags",                 amt:"1 box", unit:"ceremony", where:"Any grocery store — any brand"},
-    ],
-  },
-  "Tea Protocol — Evening Wind-Down": {
-    prep:"Ashwagandha: steep 1 bag or 1 tsp powder 5–7 minutes. Add honey and a pinch of cinnamon — it improves the earthy flavor significantly. Chamomile: steep 1–2 bags in boiling water 5 minutes. Any of the three works — choose based on availability.",
-    items: [
-      {n:"Ashwagandha root powder or tea bags", amt:"1 bag or 2 oz", unit:"ceremony", where:"Whole Foods, Sprouts, Amazon — KSM-66 or Sensoril extract preferred"},
-      {n:"Chamomile tea bags or dried chamomile", amt:"1 box or 2 oz", unit:"ceremony", where:"Any grocery store — Traditional Medicinals or Mountain Rose Herbs"},
-      {n:"Reishi mushroom powder or prepared tea blend", amt:"1 bag", unit:"ceremony", where:"Amazon, iHerb — Real Mushrooms or Host Defense. Order ahead, not in standard grocery."},
-      {n:"Raw honey",      amt:"small jar", unit:"ceremony", where:"Any grocery store"},
-      {n:"Cinnamon (ground)", amt:"small jar", unit:"spice",   where:"Any grocery store"},
-    ],
-  },
-  "Tea Protocol — Post-Practice (Lion's Mane)": {
-    prep:"Add 1 tsp Lion's Mane powder to 8 oz hot water. Stir thoroughly. Add honey to taste — it has a mild seafood-like flavor that honey cuts well. Drink in the post-practice window when BDNF uptake is highest.",
-    items: [
-      {n:"Lion's Mane mushroom powder", amt:"100g bag",  unit:"ceremony", where:"Real Mushrooms (realmushrooms.com) — fruiting body only, not mycelium. Amazon also carries it. Order ahead."},
-      {n:"Raw honey",                   amt:"small jar", unit:"ceremony", where:"Any grocery store"},
-    ],
-  },
-  "After Being Drained Protocol (Tending)": {
-    items: [
-      {n:"Lavender essential oil",                       amt:"5–15ml bottle", unit:"ceremony", where:"Plant Therapy (planttherapy.com) — GC/MS tested. Also at Whole Foods, Sprouts, or any health store."},
-      {n:"Carrier oil (fractionated coconut or jojoba)", amt:"2 oz",          unit:"ceremony", where:"Any pharmacy, Walmart, or Mountain Rose Herbs — already in cart if Rite supplies were ordered"},
-      {n:"Diffuser (ultrasonic, any brand)",             amt:"1",             unit:"ceremony", where:"Amazon — any ultrasonic diffuser under $25 works. URPOWER and InnoGear are reliable. One-time purchase."},
-    ],
-  },
-  "Weekly Solitude Rite (both)": {
-    items: [
-      {n:"Candle (pillar or taper, unscented)", amt:"1",         unit:"ceremony", where:"Any grocery or home goods store"},
-      {n:"Physical paper and pen",              amt:"as needed", unit:"ceremony", where:"Any office supply or drug store — paper must be burnable if burning is performed"},
-    ],
-  },
-};
-
-// Planner item → ceremony supply key map
-const PLANNER_CEREMONY_MAP = {
-  decl:  null,  // tradition-specific — resolved at render from imp flag
-  quiet: "Morning Grounding Tea (Tending)",
-  mid:   "Morning Clarity Tea (Imperium)",
-  inv:   "Weekly Solitude Rite (both)",
-  yours: "Replenishment Tea (Tending)",
-};
 
 function Svg({path,size=20,color="currentColor",sw=1.5}) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
@@ -985,7 +868,7 @@ function Checkbox({checked,col,onChange}) {
 }
 
 // ── MAIN APP ─────────────────────────────────────────────────────
-function App() {
+export default function App() {
   const [prof,setProf]   = useState("IMP");
   const [nav,setNav]     = useState("home");
   const [hub,setHub]     = useState(null);
@@ -1005,7 +888,7 @@ function App() {
   const [alSecs,setAlSecs]       = useState(300);
   const [showOT,setShowOT]       = useState(false);
   const [otVal,setOtVal]         = useState(null);
-  const [sched,setSched]         = useState("rotating_nights");
+  const [sched,setSched]         = useState(null);
   const [workDays,setWorkDays]   = useState({Mon:false,Tue:false,Wed:true,Thu:true,Fri:false,Sat:true,Sun:true});
   const [shiftStart,setShiftStart] = useState("18:00");
   const [shiftEnd,setShiftEnd]     = useState("06:00");
@@ -1072,22 +955,21 @@ function App() {
   // ── Sleep window from schedule ──
   function sleepWin() {
     if (!sched) return null;
-    const ot = otVal || 0;
     const h = parseInt(shiftEnd.split(":")[0]);
     const today = new Date().toLocaleDateString("en-US",{weekday:"short"}).slice(0,3);
     const working = workDays[today];
     if (!working) return {wd:"9:30 PM",sl:"10:30 PM",wk:"6:30 AM",note:"Rest day"};
     const isNight = parseInt(shiftStart.split(":")[0]) >= 17;
     if (isNight) {
-      const s = (h+1+ot)%24;
-      const w = (h+8+ot)%24;
+      const s = (h+1)%24;
+      const w = (h+8)%24;
       const f = x => `${x===0?12:x>12?x-12:x}:00 ${x<12||x===0?"AM":"PM"}`;
-      return {wd:f(s),sl:f(s),wk:f(w),note:ot?"Night shift — overtime adjusts sleep window":"Night shift — darken the room"};
+      return {wd:f(s),sl:f(s),wk:f(w),note:"Night shift — darken the room"};
     }
-    const wk = parseInt(shiftStart.split(":")[0])-1+ot;
+    const wk = parseInt(shiftStart.split(":")[0])-1;
     const sl = wk-8;
     const f = x=>{const n=(x+24)%24;return `${n===0?12:n>12?n-12:n}:00 ${n<12||n===0?"AM":"PM"}`;};
-    return {wd:f(sl+1),sl:f(sl),wk:f(wk),note:ot?"Pre-shift — overtime adjusts sleep window":"Pre-shift — full 8 hours"};
+    return {wd:f(sl+1),sl:f(sl),wk:f(wk),note:"Pre-shift — full 8 hours"};
   }
   const sw = sleepWin();
 
@@ -1133,16 +1015,9 @@ function App() {
       if (prev[k]) {
         return {...prev, [k]: {...prev[k], count: prev[k].count + 1}};
       }
-      return {...prev, [k]: {name:ing.n, amt:ing.amt, unit:ing.unit||"pantry", where:ing.where||null, count:1, checked:false}};
+      return {...prev, [k]: {name:ing.n, amt:ing.amt, unit:ing.unit||"pantry", count:1, checked:false}};
     });
     showT("+ " + ing.n);
-  }
-
-  function addCeremonySupplies(ceremonyKey) {
-    const entry = CEREMONY_SUPPLIES[ceremonyKey];
-    if (!entry) return;
-    entry.items.forEach(item => addIngredient({...item}));
-    showT("Ceremony supplies added");
   }
 
   function addAllIngredients(mealName) {
@@ -1540,7 +1415,7 @@ function App() {
               {imp?<SigilImp/>:<SigilTend/>}
               <span style={{fontSize:9,color:T.t3,letterSpacing:"0.14em",textTransform:"uppercase"}}>Setup</span>
             </div>
-            <button onClick={()=>{setSched(tourSched||"rotating_nights");setTourDone(true);}} style={{background:"transparent",border:"none",color:T.t3,fontSize:9,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>Skip Tour</button>
+            <button onClick={()=>setTourDone(true)} style={{background:"transparent",border:"none",color:T.t3,fontSize:9,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>Skip Tour</button>
           </div>
 
           {/* Tour content */}
@@ -1555,7 +1430,7 @@ function App() {
             </div>
             <div style={{display:"flex",gap:10}}>
               {tourStep>0&&<button onClick={()=>setTourStep(s=>s-1)} style={{flex:1,padding:"12px 0",background:"transparent",border:`1px solid ${T.b1}`,color:T.t3,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",borderRadius:5}}>← Back</button>}
-              <button onClick={()=>{if(isLast){setSched(tourSched||"rotating_nights");setTourDone(true);}else{setTourStep(s=>s+1);}}} style={{flex:2,padding:"12px 0",background:isLast?T.teal:T.gold,border:"none",color:isLast?imp?"#000":"#fff":"#000",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",cursor:"pointer",borderRadius:5,fontWeight:700}}>
+              <button onClick={()=>{if(isLast){setTourDone(true);}else{setTourStep(s=>s+1);}}} style={{flex:2,padding:"12px 0",background:isLast?T.teal:T.gold,border:"none",color:isLast?imp?"#000":"#fff":"#000",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",cursor:"pointer",borderRadius:5,fontWeight:700}}>
                 {isLast?`Begin >`:`Next →`}
               </button>
             </div>
@@ -1762,8 +1637,7 @@ function App() {
                   <span style={{fontSize:9,color:T.shiftCol,display:"flex",alignItems:"center",gap:4}}><span style={{width:5,height:5,borderRadius:"50%",background:T.shiftCol,display:"inline-block"}}/>{T.person[0]}: {T.shiftSelf}</span>
                   <span style={{fontSize:9,color:T.partnerCol,display:"flex",alignItems:"center",gap:4}}><span style={{width:5,height:5,borderRadius:"50%",background:T.partnerCol,display:"inline-block"}}/>{T.partnerInit}: {T.shiftPartner}</span>
                 </div>
-                {otVal&&<span onClick={(e)=>{e.stopPropagation();setShowOT(true);}} style={{fontSize:9,color:"#c07040",cursor:"pointer"}}>OT +{otVal}h</span>}
-                <button onClick={(e)=>{e.stopPropagation();setShowOT(true);}} style={{padding:"2px 7px",background:"transparent",border:`1px solid ${T.b2}`,borderRadius:3,color:T.t3,fontSize:8,cursor:"pointer",letterSpacing:"0.04em",textTransform:"uppercase",flexShrink:0}}>OT</button>
+                {otVal&&<span style={{fontSize:9,color:"#c07040"}}>OT +{otVal}h</span>}
                 <span style={{fontSize:9,color:T.t3}}>Schedule ›</span>
               </div>
 
@@ -2017,9 +1891,6 @@ function App() {
                                 <div style={{fontSize:11,color:T.t3,fontStyle:"italic",marginBottom:10}}>Leftover — no prep needed</div>
                               );
                             })()}
-                            {PLANNER_CEREMONY_MAP[item.id]&&(
-                              <button onClick={()=>addCeremonySupplies(PLANNER_CEREMONY_MAP[item.id])} style={{marginBottom:10,width:"100%",padding:"7px 0",background:"rgba(122,90,138,0.08)",border:"1px solid rgba(122,90,138,0.35)",borderRadius:4,color:"#7a5a8a",fontSize:8,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase"}}>+ Add Ceremony Supplies to Cart</button>
-                            )}
                             <button onClick={()=>{setDone(p=>({...p,[item.id]:true}));setExpHome(null);}} style={{marginTop:12,width:"100%",padding:"9px 0",background:T.tealBg,border:`1px solid ${T.teal}`,color:T.teal,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",borderRadius:5}}>Complete</button>
                           </div>
                         )}
@@ -2345,11 +2216,11 @@ function App() {
                         </div>
                       ):(
                         <>
-                          {["produce","protein","dairy","grains","pantry","spice","beverage","ceremony"].map(cat=>{
+                          {["produce","protein","dairy","grains","pantry","spice","beverage"].map(cat=>{
                             const items=Object.entries(cart).filter(([,v])=>v.unit===cat&&!v.checked);
                             if(items.length===0)return null;
-                            const catLabel={produce:"Produce",protein:"Proteins",dairy:"Dairy & Eggs",grains:"Grains & Legumes",pantry:"Pantry",spice:"Herbs & Spices",beverage:"Beverages",ceremony:"Ceremony & Practice"}[cat];
-                            const catColor={produce:"#5a9a5a",protein:"#c04040",dairy:"#4a80c0",grains:"#a07840",pantry:"#c0a040",spice:"#808040",beverage:"#4a8088",ceremony:"#7a5a8a"}[cat];
+                            const catLabel={produce:"Produce",protein:"Proteins",dairy:"Dairy & Eggs",grains:"Grains & Legumes",pantry:"Pantry",spice:"Herbs & Spices",beverage:"Beverages"}[cat];
+                            const catColor={produce:"#5a9a5a",protein:"#c04040",dairy:"#4a80c0",grains:"#a07840",pantry:"#c0a040",spice:"#808040",beverage:"#4a8088"}[cat];
                             return (
                               <div key={cat} style={{marginBottom:12}}>
                                 <div style={{fontSize:8,color:catColor,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:5,display:"flex",alignItems:"center",gap:5}}>
@@ -2359,10 +2230,7 @@ function App() {
                                 {items.map(([k,v])=>(
                                   <div key={k} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:`1px solid ${T.b1}`}}>
                                     <div onClick={()=>setCart(p=>({...p,[k]:{...p[k],checked:true}}))} style={{width:18,height:18,border:`1px solid ${T.b2}`,borderRadius:3,background:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}/>
-                                    <div style={{flex:1}}>
-                                      <span style={{fontSize:12,color:T.t2}}>{v.name}</span>
-                                      {v.where&&<div style={{fontSize:9,color:T.t3,lineHeight:1.4,marginTop:2}}>{v.where}</div>}
-                                    </div>
+                                    <span style={{flex:1,fontSize:12,color:T.t2}}>{v.name}</span>
                                     <span style={{fontSize:9.5,color:T.t3,marginRight:2}}>{v.count>1?`×${v.count}`:v.amt}</span>
                                     <button onClick={()=>removeCartItem(k)} style={{background:"transparent",border:"none",color:T.t3,fontSize:15,cursor:"pointer",padding:"0 2px",lineHeight:1,flexShrink:0}}>×</button>
                                   </div>
@@ -2458,6 +2326,3 @@ function App() {
     </div>
   );
 }
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
