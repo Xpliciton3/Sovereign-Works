@@ -24,7 +24,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#120A0E"
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

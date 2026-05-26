@@ -2,21 +2,20 @@ export const SQLITE_SCHEMA = `
 CREATE TABLE IF NOT EXISTS sync_queue (
   id TEXT PRIMARY KEY,
   path TEXT NOT NULL,
-  data TEXT NOT NULL,
-  updatedAt INTEGER NOT NULL
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  synced INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS grocery (
-  id TEXT PRIMARY KEY,
+  item_key TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  quantity TEXT NOT NULL,
-  unit TEXT NOT NULL,
-  checked INTEGER NOT NULL DEFAULT 0,
-  addedBy TEXT NOT NULL,
-  recipeSource TEXT,
-  addedAt INTEGER NOT NULL,
-  updatedAt INTEGER NOT NULL
+  amt TEXT,
+  unit TEXT,
+  count INTEGER DEFAULT 1,
+  checked INTEGER DEFAULT 0,
+  category TEXT,
+  added_at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS hydration_log (
@@ -75,31 +74,27 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(SQLITE_SCHEMA);
 }
 
-export async function writeShared<T extends { id: string; updatedAt: number }>(
+export async function writeShared(
   db: SQLiteDatabase,
-  localTable: string,
   firebasePath: string,
-  record: T,
+  payload: unknown,
   firebaseSet: (path: string, data: unknown) => Promise<void>
 ): Promise<void> {
-  await db.runAsync(
-    `INSERT OR REPLACE INTO ${localTable} (id, data, updatedAt) VALUES (?, ?, ?)`,
-    record.id,
-    JSON.stringify(record),
-    record.updatedAt
-  );
+  const id = firebasePath.replace(/\//g, '_');
+  const createdAt = Date.now();
+  const payloadJson = JSON.stringify(payload);
 
   await db.runAsync(
-    `INSERT OR REPLACE INTO sync_queue (id, path, data, updatedAt) VALUES (?, ?, ?, ?)`,
-    record.id,
+    `INSERT OR REPLACE INTO sync_queue (id, path, payload, created_at, synced) VALUES (?, ?, ?, ?, 0)`,
+    id,
     firebasePath,
-    JSON.stringify(record),
-    record.updatedAt
+    payloadJson,
+    createdAt
   );
 
   try {
-    await firebaseSet(firebasePath, record);
-    await db.runAsync(`DELETE FROM sync_queue WHERE id = ?`, record.id);
+    await firebaseSet(firebasePath, payload);
+    await db.runAsync(`UPDATE sync_queue SET synced = 1 WHERE id = ?`, id);
   } catch {
     // Queued — drainSyncQueue will retry on network restore.
   }
@@ -112,14 +107,14 @@ export async function drainSyncQueue(
   const pending = await db.getAllAsync<{
     id: string;
     path: string;
-    data: string;
-    updatedAt: number;
-  }>(`SELECT * FROM sync_queue ORDER BY updatedAt ASC`);
+    payload: string;
+    created_at: number;
+  }>(`SELECT * FROM sync_queue WHERE synced = 0 ORDER BY created_at ASC`);
 
   for (const item of pending) {
     try {
-      await firebaseSet(item.path, JSON.parse(item.data));
-      await db.runAsync(`DELETE FROM sync_queue WHERE id = ?`, item.id);
+      await firebaseSet(item.path, JSON.parse(item.payload));
+      await db.runAsync(`UPDATE sync_queue SET synced = 1 WHERE id = ?`, item.id);
     } catch {
       break;
     }

@@ -280,3 +280,11 @@ export interface AreYouAwakeConfig {
 `SYSTEM_ALERT_WINDOW` is required for the full-screen takeover to work on locked screens.
 Alarms must survive device restart — use `RECEIVE_BOOT_COMPLETED` to reschedule on boot.
 
+---
+
+## BATCH_COOK_REMINDER (Layer 3+)
+
+`BATCH_COOK_REMINDER`: fires the evening before any day tagged `batch:true` in WEEK_PLAN.
+Message: "Tomorrow — [Day]: [Dinner meal name]. Start protein tonight if marinating."
+Timing: 7 PM the evening before. User-toggleable. Fires only if meal plan week is active.
+

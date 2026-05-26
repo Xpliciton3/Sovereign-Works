@@ -21,9 +21,18 @@
 
 | Item | Status |
 |------|--------|
-| Tending release APK | **Done** → `dist\sovereign-tending-v1.0.0.apk` (~39 MB, `com.sovereignworks.tending`) |
+| **Layer 2 Daily Hub** | In progress — see `C:\Users\holli\OneDrive\Desktop\SOVEREIGN_WORKS_PHASE1\LAYER2_BUILD_SEQUENCE.md` (resume at **L2.07**) |
+| Layer 2 APK build | **Blocked** until L2.30 is checked — do not run EAS until then |
+| Layer 3 (native alarms) | Do not start until instructed |
 | Git push to GitHub | Not pushed |
 | GitHub Release v1.0.0 with both APKs | Ready — run steps in `GITHUB_RELEASE_INSTRUCTIONS.md` |
+
+## Layer 2 / FIX_02 (2026-05-25)
+
+- `specs/sovereign_v9.jsx` copied — canonical prototype (nut-safe week plan, RECIPES, cart, steps, macros)
+- `specs/sovereign_v7.jsx` — peanut butter → sunflower seed butter (legacy reference)
+- `specs/07_ALARM_SYSTEM.md` — BATCH_COOK_REMINDER note added
+- Shared: `weekPlan.ts`, `recipes.ts`, `useCart`, Layer 2 tabs (Home / Planner / Nourish / More)
 
 ---
 
@@ -101,9 +110,12 @@ Download URLs (after release):
 
 ## Specs reference
 
-Original instructions: `C:\Users\holli\OneDrive\Desktop\SOVEREIGN_WORKS_PHASE1`  
-Copied into project: `C:\SovereignWorks\specs\`  
-Build progress tracker: `specs\21_BUILD_SEQUENCE.md`
+**Canonical instructions:** `C:\Users\holli\OneDrive\Desktop\SOVEREIGN_WORKS_PHASE1`  
+Layer 2 tracker: `LAYER2_BUILD_SEQUENCE.md` (same folder)  
+Layer 2 prime: `LAYER2_PRIME_PROMPT_v2.md`  
+Prototype: `sovereign_v9.jsx` (same folder)  
+Code repo: `C:\SovereignWorks` — see root `INSTRUCTIONS.md`  
+Workspace mirror (OneDrive wins if different): `C:\SovereignWorks\specs\`
 
 ---
 

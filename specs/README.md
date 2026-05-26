@@ -1,5 +1,11 @@
-# SOVEREIGN WORKS — PHASE 1 BUILD PACKAGE
-# Give this entire specs/ folder to Cursor. Read files in the order below.
+# SOVEREIGN WORKS — PHASE 1 BUILD PACKAGE (workspace mirror)
+
+**Canonical instructions live on OneDrive:**  
+`C:\Users\holli\OneDrive\Desktop\SOVEREIGN_WORKS_PHASE1`  
+Layer 2 progress: `LAYER2_BUILD_SEQUENCE.md` in that folder.  
+If this copy disagrees with OneDrive, **use OneDrive.**
+
+# Read files in the order below.
 # Do not modify content files (RECIPE_CARDS, MASTER_IMPERIUM, MASTER_TENDING).
 
 ---

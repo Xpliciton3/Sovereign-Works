@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const APP_VERSION = "v9.1"; // bump this string on every update to force tutorial reset
+
 const FONT = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;200;300;400;600&display=swap";
 const COR = "'Cormorant Garamond',Georgia,serif";
 const JOS = "'Josefin Sans',sans-serif";
@@ -10,7 +12,7 @@ const TH = {
     teal:"#18c48a",tealBg:"#061e16",tealBdr:"#0d5c4a",
     text:"#f5f0e8",t2:"#a8a090",t3:"#555045",
     shiftCol:"#44aa44",partnerCol:"#c47878",partnerInit:"H",partnerName:"Holli",
-    name:"THE IMPERIUM",person:"Garrin",sub:"Uncrowned Operating System",
+    name:"THE IMPERIUM",person:"Garrin",sub:"Uncrowned Operating System",epithet:"Uncrowned",
     decl:"Power from within cannot be revoked.",
     declSub:"Stand. Both feet on the floor. Speak this aloud.",
     axiom:"UNCROWNED. UNBOWED.\nUNBROKEN. UNFINISHED.",
@@ -24,7 +26,7 @@ const TH = {
     teal:"#c47878",tealBg:"#2a100e",tealBdr:"#4a1e2a",
     text:"#f5e8e0",t2:"#c4a898",t3:"#806858",
     shiftCol:"#6080c4",partnerCol:"#c9a84c",partnerInit:"G",partnerName:"Garrin",
-    name:"THE TENDING",person:"Holli",sub:"Unspent Operating System",
+    name:"THE TENDING",person:"Holli",sub:"Unspent Operating System",epithet:"Unspent",
     decl:"The keeper of what matters is never powerless.",
     declSub:"Twenty minutes of quiet first. The rest waits.",
     axiom:"FELT. FAITHFUL.\nFULL. UNSPENT.",
@@ -37,43 +39,779 @@ const TH = {
 
 // ── MEAL PLAN — 4 weeks, unique meals every day, same for both people ──
 const WEEK_PLAN = [
-  {week:"Week 1 — Jan 13",days:[
-    {day:"Monday",    meals:{b:"Oats with banana and sunflower seed butter",l:"Lentil soup with bread",d:"Sheet pan chicken thighs, potatoes, broccoli"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF","VEG"],d:["NF","GF","DF"]},batch:true},
-    {day:"Tuesday",   meals:{b:"Scrambled eggs on toast",l:"Leftover sheet pan chicken",d:"Spaghetti with meat sauce"},tags:{b:["NF"],l:["NF","GF","DF"],d:["NF"]},batch:false},
-    {day:"Wednesday", meals:{b:"Greek yogurt with honey and granola",l:"Tuna salad sandwich",d:"Baked salmon with rice and green beans"},tags:{b:["NF","GF"],l:["NF","DF"],d:["NF","GF","DF"]},batch:true},
-    {day:"Thursday",  meals:{b:"Avocado toast with a fried egg",l:"Leftover baked salmon",d:"Black bean quesadillas with salad"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","VEG"]},batch:false},
-    {day:"Friday",    meals:{b:"Banana smoothie with protein",l:"Leftover quesadillas",d:"Pork chops with mashed potatoes and peas"},tags:{b:["NF","GF","DF"],l:["NF","VEG"],d:["NF","GF"]},batch:false},
-    {day:"Saturday",  meals:{b:"Overnight oats with berries",l:"Chicken wrap with hummus",d:"Beef stir-fry with rice"},tags:{b:["NF","GF","VEG"],l:["NF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Sunday",    meals:{b:"Veggie omelette",l:"Shakshuka with bread",d:"Meal prep batch — double dinner"},tags:{b:["NF","GF","VEG"],l:["NF","VEG"],d:["NF"]},batch:true},
+  // ── WEEK 1 ──
+  {week:"Week 1 — Foundation",days:[
+    {day:"Monday",    meals:{b:"Steel cut oats with berries",       l:"Lentil soup",                        d:"Sheet pan chicken with vegetables"},    tags:{b:["NF","GF","DF","VEG"],l:["NF","GF","DF","VEG"],d:["NF","GF","DF"]},          batch:true},
+    {day:"Tuesday",   meals:{b:"Sheet pan eggs with roasted veg",   l:"Leftover sheet pan chicken",         d:"Ground turkey stir-fry"},               tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Wednesday", meals:{b:"Overnight oats",                    l:"Turkey and avocado wrap",             d:"Baked lemon herb chicken thighs"},      tags:{b:["NF","GF","VEG"],      l:["NF","DF"],                d:["NF","GF","DF"]},        batch:true},
+    {day:"Thursday",  meals:{b:"Avocado toast with fried egg",       l:"Leftover baked chicken",             d:"Stuffed bell peppers"},                 tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF","GF"]},             batch:false},
+    {day:"Friday",    meals:{b:"High-protein smoothie bowl",         l:"Black bean and sweet potato bowl",   d:"Pork tenderloin with root vegetables"}, tags:{b:["NF","GF","DF"],       l:["NF","GF","DF","VEG"],     d:["NF","GF","DF"]},        batch:false},
+    {day:"Saturday",  meals:{b:"Greek yogurt parfait with granola",  l:"Teriyaki chicken bowl",              d:"Ground beef and broccoli bowl"},        tags:{b:["NF","GF"],            l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Sunday",    meals:{b:"Veggie frittata",                    l:"Chickpea and vegetable soup",        d:"Meal prep batch — double dinner"},      tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF","VEG"],     d:["NF"]},                  batch:true},
   ]},
-  {week:"Week 2 — Jan 20",days:[
-    {day:"Monday",    meals:{b:"Oats with banana and sunflower seed butter",l:"Leftover Sunday batch",d:"Chicken and vegetable stir-fry with rice"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:true},
-    {day:"Tuesday",   meals:{b:"Scrambled eggs on toast",l:"Pasta salad with olives and feta",d:"Turkey meatballs, tomato sauce, pasta"},tags:{b:["NF"],l:["NF","VEG"],d:["NF"]},batch:false},
-    {day:"Wednesday", meals:{b:"Greek yogurt with honey and granola",l:"Shakshuka with bread",d:"Baked salmon with rice and green beans"},tags:{b:["NF","GF"],l:["NF","VEG"],d:["NF","GF","DF"]},batch:true},
-    {day:"Thursday",  meals:{b:"Avocado toast with a fried egg",l:"Leftover baked salmon",d:"Vegetable curry with chickpeas and rice"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","GF","DF","VEG"]},batch:false},
-    {day:"Friday",    meals:{b:"Banana smoothie with protein",l:"Leftover curry",d:"Greek chicken with roasted vegetables"},tags:{b:["NF","GF","DF"],l:["NF","GF","DF","VEG"],d:["NF","GF","DF"]},batch:false},
-    {day:"Saturday",  meals:{b:"Overnight oats with berries",l:"Minestrone soup",d:"Ground turkey tacos with black beans"},tags:{b:["NF","GF","VEG"],l:["NF","DF","VEG"],d:["NF","GF","DF"]},batch:false},
-    {day:"Sunday",    meals:{b:"Veggie omelette",l:"Chicken and rice soup",d:"Meal prep batch — double dinner"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:true},
+  // ── WEEK 2 ──
+  {week:"Week 2 — Building",days:[
+    {day:"Monday",    meals:{b:"Overnight oats",                    l:"Leftover Sunday batch",              d:"Honey garlic chicken thighs"},          tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Tuesday",   meals:{b:"Avocado toast with fried egg",       l:"Egg fried rice",                    d:"Turkey meatballs with marinara"},       tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF"]},                  batch:false},
+    {day:"Wednesday", meals:{b:"Steel cut oats with berries",        l:"Big green salad with chicken",       d:"Herb roasted chicken with root veg"},   tags:{b:["NF","GF","DF","VEG"], l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Thursday",  meals:{b:"Sheet pan eggs with roasted veg",    l:"Leftover herb roasted chicken",      d:"Black bean tacos with mango salsa"},    tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF","GF","DF","VEG"]},  batch:false},
+    {day:"Friday",    meals:{b:"High-protein smoothie bowl",         l:"Ground turkey chili",               d:"Lemon herb chicken with wilted greens"}, tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Saturday",  meals:{b:"Greek yogurt parfait with granola",  l:"Chicken salad lettuce wraps",        d:"Pulled chicken tacos"},                 tags:{b:["NF","GF"],            l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Sunday",    meals:{b:"Veggie frittata",                    l:"Turkey meatball bowl",               d:"Meal prep batch — double dinner"},      tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF"]},                  batch:true},
   ]},
-  {week:"Week 3 — Jan 27",days:[
-    {day:"Monday",    meals:{b:"Oats with banana and sunflower seed butter",l:"Lentil soup with bread",d:"White bean and kale soup"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF","VEG"],d:["NF","GF","DF","VEG"]},batch:true},
-    {day:"Tuesday",   meals:{b:"Scrambled eggs on toast",l:"Leftover white bean soup",d:"Sheet pan chicken thighs, potatoes, broccoli"},tags:{b:["NF"],l:["NF","GF","DF","VEG"],d:["NF","GF","DF"]},batch:false},
-    {day:"Wednesday", meals:{b:"Greek yogurt with honey and granola",l:"Black bean quesadillas",d:"Baked salmon with rice and green beans"},tags:{b:["NF","GF"],l:["NF","VEG"],d:["NF","GF","DF"]},batch:true},
-    {day:"Thursday",  meals:{b:"Avocado toast with a fried egg",l:"Leftover baked salmon",d:"Beef stir-fry with rice"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Friday",    meals:{b:"Banana smoothie with protein",l:"Leftover beef stir-fry",d:"Greek chicken with roasted vegetables"},tags:{b:["NF","GF","DF"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Saturday",  meals:{b:"Overnight oats with berries",l:"Pasta salad with olives and feta",d:"Shakshuka with bread"},tags:{b:["NF","GF","VEG"],l:["NF","VEG"],d:["NF","VEG"]},batch:false},
-    {day:"Sunday",    meals:{b:"Veggie omelette",l:"Tuna salad sandwich",d:"Meal prep batch — double dinner"},tags:{b:["NF","GF","VEG"],l:["NF","DF"],d:["NF"]},batch:true},
+  // ── WEEK 3 ──
+  {week:"Week 3 — Depth",days:[
+    {day:"Monday",    meals:{b:"Egg muffin cups",                    l:"Leftover Sunday batch",              d:"Ground turkey and veg noodle bowl"},    tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Tuesday",   meals:{b:"Turkey sausage and sweet potato hash",l:"Batch prep grain bowl",             d:"Slow cooker pulled chicken"},           tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Wednesday", meals:{b:"Banana oat pancakes",                l:"Leftover pulled chicken",            d:"Baked lemon herb chicken thighs"},      tags:{b:["NF","VEG"],           l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Thursday",  meals:{b:"Avocado toast with fried egg",        l:"Black bean and sweet potato bowl",  d:"Ground turkey stir-fry"},               tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF","VEG"],     d:["NF","GF","DF"]},        batch:false},
+    {day:"Friday",    meals:{b:"Overnight oats",                     l:"Leftover turkey stir-fry",           d:"Herb roasted chicken with root veg"},   tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Saturday",  meals:{b:"Steel cut oats with berries",         l:"Chicken stir-fry with rice noodles",d:"Stuffed bell peppers"},                 tags:{b:["NF","GF","DF","VEG"], l:["NF","GF","DF"],           d:["NF","GF"]},             batch:false},
+    {day:"Sunday",    meals:{b:"Veggie frittata",                    l:"Lentil soup",                        d:"Meal prep batch — double dinner"},      tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF","VEG"],     d:["NF"]},                  batch:true},
   ]},
-  {week:"Week 4 — Feb 3",days:[
-    {day:"Monday",    meals:{b:"Oats with banana and sunflower seed butter",l:"Minestrone soup",d:"Vegetable curry with rice"},tags:{b:["NF","GF","VEG"],l:["NF","DF","VEG"],d:["NF","GF","DF","VEG"]},batch:true},
-    {day:"Tuesday",   meals:{b:"Scrambled eggs on toast",l:"Leftover curry",d:"Lemon garlic shrimp with pasta"},tags:{b:["NF"],l:["NF","GF","DF","VEG"],d:["NF","DF"]},batch:false},
-    {day:"Wednesday", meals:{b:"Greek yogurt with honey and granola",l:"Tuna salad sandwich",d:"Greek chicken with roasted vegetables"},tags:{b:["NF","GF"],l:["NF","DF"],d:["NF","GF","DF"]},batch:true},
-    {day:"Thursday",  meals:{b:"Avocado toast with a fried egg",l:"Leftover Greek chicken",d:"Baked chicken thighs with roasted carrots"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Friday",    meals:{b:"Banana smoothie with protein",l:"Leftover baked chicken",d:"Chicken and vegetable soup"},tags:{b:["NF","GF","DF"],l:["NF","GF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Saturday",  meals:{b:"Overnight oats with berries",l:"Chicken wrap with hummus",d:"Ground beef stuffed peppers with rice"},tags:{b:["NF","GF","VEG"],l:["NF","DF"],d:["NF","GF","DF"]},batch:false},
-    {day:"Sunday",    meals:{b:"Veggie omelette",l:"Lentil soup with bread",d:"Spaghetti with meat sauce"},tags:{b:["NF","GF","VEG"],l:["NF","GF","DF","VEG"],d:["NF"]},batch:false},
+  // ── WEEK 4 ──
+  {week:"Week 4 — Mastery",days:[
+    {day:"Monday",    meals:{b:"Overnight oats",                     l:"Leftover Sunday batch",              d:"Ground beef and broccoli bowl"},        tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Tuesday",   meals:{b:"Sheet pan eggs with roasted veg",    l:"Turkey and avocado wrap",            d:"Honey garlic chicken thighs"},          tags:{b:["NF","GF","DF"],       l:["NF","DF"],                d:["NF","GF","DF"]},        batch:false},
+    {day:"Wednesday", meals:{b:"Greek yogurt parfait with granola",  l:"Teriyaki chicken bowl",              d:"Sheet pan chicken with vegetables"},    tags:{b:["NF","GF"],            l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:true},
+    {day:"Thursday",  meals:{b:"Avocado toast with fried egg",        l:"Leftover sheet pan chicken",        d:"Lemon herb chicken with wilted greens"}, tags:{b:["NF","GF","VEG"],      l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Friday",    meals:{b:"High-protein smoothie bowl",          l:"Chickpea and vegetable soup",       d:"Pulled chicken tacos"},                 tags:{b:["NF","GF","DF"],       l:["NF","GF","DF","VEG"],     d:["NF","GF","DF"]},        batch:false},
+    {day:"Saturday",  meals:{b:"Steel cut oats with berries",         l:"Big green salad with chicken",      d:"Pork tenderloin with root vegetables"}, tags:{b:["NF","GF","DF","VEG"], l:["NF","GF","DF"],           d:["NF","GF","DF"]},        batch:false},
+    {day:"Sunday",    meals:{b:"Egg muffin cups",                    l:"Ground turkey chili",               d:"Turkey meatballs with marinara"},       tags:{b:["NF","GF","DF"],       l:["NF","GF","DF"],           d:["NF"]},                  batch:false},
   ]},
 ];
+
+// ── RECIPE DATABASE — sourced from RECIPE_CARDS_v3_1.md ──
+const RECIPES = {
+  // ── BREAKFASTS ──
+  "Steel cut oats with berries": {
+    macros:{cal:390, p:14, c:70, f:8, fiber:8},
+    ing:[
+      {n:"Steel cut oats",         amt:"1½ cups",   unit:"grains"},
+      {n:"Water",                  amt:"3¾ cups",   unit:"pantry"},
+      {n:"Milk or oat milk",       amt:"¾ cup",     unit:"dairy"},
+      {n:"Mixed berries",          amt:"1½ cups",   unit:"produce"},
+      {n:"Honey or maple syrup",   amt:"3 tbsp",    unit:"pantry"},
+      {n:"Butter or olive oil",    amt:"1 tsp",     unit:"dairy"},
+      {n:"Salt",                   amt:"½ tsp",     unit:"spice"},
+    ],
+    steps:[
+      "Warm a medium saucepan over medium heat and add the butter or olive oil.",
+      "Add the dry oats and stir for 2–3 minutes until they smell toasty and slightly nutty.",
+      "Pour in the water and salt and bring to a boil.",
+      "Reduce heat to medium-low and cook uncovered for 20–25 minutes, stirring every 5 minutes.",
+      "Stir in the milk for the final 5 minutes to make them extra creamy.",
+      "Serve topped with berries and a drizzle of honey.",
+    ],
+  },
+  "Sheet pan eggs with roasted veg": {
+    macros:{cal:320, p:22, c:18, f:18, fiber:5},
+    ing:[
+      {n:"Large eggs",             amt:"5",         unit:"protein"},
+      {n:"Cherry tomatoes, halved",amt:"1 cup",     unit:"produce"},
+      {n:"Broccoli florets",       amt:"1 cup",     unit:"produce"},
+      {n:"Red bell pepper, sliced",amt:"1",         unit:"produce"},
+      {n:"Red onion, thin sliced", amt:"½",         unit:"produce"},
+      {n:"Olive oil",              amt:"2 tbsp",    unit:"pantry"},
+      {n:"Smoked paprika",         amt:"½ tsp",     unit:"spice"},
+      {n:"Garlic powder",          amt:"½ tsp",     unit:"spice"},
+      {n:"Salt and black pepper",  amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 425°F and line a large sheet pan with parchment or foil.",
+      "Toss all vegetables with olive oil, smoked paprika, garlic powder, salt, and pepper.",
+      "Spread in a single layer and roast for 12 minutes.",
+      "Make 5 small wells in the vegetables and crack one egg into each.",
+      "Return to oven for 6–8 minutes — 6 min for runny yolks, 8 for fully set.",
+      "Serve straight from the pan.",
+    ],
+  },
+  "Overnight oats": {
+    macros:{cal:380, p:16, c:58, f:9, fiber:7},
+    ing:[
+      {n:"Rolled oats",            amt:"½ cup",     unit:"grains"},
+      {n:"Milk or oat milk",       amt:"½ cup",     unit:"dairy"},
+      {n:"Plain Greek yogurt",     amt:"¼ cup",     unit:"dairy"},
+      {n:"Chia seeds",             amt:"1 tbsp",    unit:"pantry"},
+      {n:"Honey or maple syrup",   amt:"1 tbsp",    unit:"pantry"},
+      {n:"Vanilla extract",        amt:"½ tsp",     unit:"pantry"},
+      {n:"Fresh fruit (morning of)",amt:"½ cup",    unit:"produce"},
+    ],
+    steps:[
+      "The night before: combine oats, milk, yogurt, chia seeds, honey, and vanilla in a jar.",
+      "Stir well so chia seeds are evenly distributed. Seal and refrigerate.",
+      "In the morning: stir — it will have thickened. Add fresh fruit.",
+      "Eat cold or microwave 90 seconds. Add a splash of milk if too thick.",
+    ],
+  },
+  "Avocado toast with fried egg": {
+    macros:{cal:410, p:18, c:38, f:22, fiber:8},
+    ing:[
+      {n:"Whole grain or sourdough bread",amt:"2 slices",unit:"grains"},
+      {n:"Ripe avocado",           amt:"1",         unit:"produce"},
+      {n:"Eggs",                   amt:"2",         unit:"protein"},
+      {n:"Olive oil",              amt:"1 tsp",     unit:"pantry"},
+      {n:"Lemon, juiced",          amt:"½",         unit:"produce"},
+      {n:"Salt, pepper, red pepper flakes",amt:"to taste",unit:"spice"},
+    ],
+    steps:[
+      "Toast bread until golden and firm.",
+      "Mash avocado with lemon juice, salt, and pepper until mostly smooth.",
+      "Heat olive oil in a non-stick pan over medium. Crack in eggs and cook covered 2–3 min for runny yolks.",
+      "Spread avocado on toast, top with egg, season again.",
+    ],
+  },
+  "High-protein smoothie bowl": {
+    macros:{cal:420, p:32, c:52, f:8, fiber:6},
+    ing:[
+      {n:"Frozen banana",          amt:"1",         unit:"produce"},
+      {n:"Frozen mixed berries",   amt:"1 cup",     unit:"produce"},
+      {n:"Greek yogurt",           amt:"½ cup",     unit:"dairy"},
+      {n:"Milk or oat milk",       amt:"¼ cup",     unit:"dairy"},
+      {n:"Protein powder (NF)",    amt:"1 scoop",   unit:"pantry"},
+      {n:"Toppings: granola, seeds, fresh fruit",amt:"to taste",unit:"grains"},
+    ],
+    steps:[
+      "Blend frozen banana, frozen berries, Greek yogurt, milk, and protein powder until thick and smooth.",
+      "Pour into a bowl — it should be thicker than a regular smoothie.",
+      "Top with granola, seeds, and fresh fruit. Eat immediately before it melts.",
+    ],
+  },
+  "Greek yogurt parfait with granola": {
+    macros:{cal:390, p:23, c:45, f:10, fiber:5},
+    ing:[
+      {n:"Plain full-fat Greek yogurt",amt:"¾ cup",unit:"dairy"},
+      {n:"Homemade oat-seed granola",amt:"¼ cup",  unit:"grains"},
+      {n:"Mixed berries",          amt:"¾ cup",    unit:"produce"},
+      {n:"Honey",                  amt:"1–2 tsp",  unit:"pantry"},
+    ],
+    steps:[
+      "Spoon yogurt into a bowl.",
+      "Top with granola, berries, and a drizzle of honey.",
+      "Serve immediately — granola softens quickly once it touches yogurt.",
+    ],
+  },
+  "Veggie frittata": {
+    macros:{cal:280, p:22, c:10, f:18, fiber:3},
+    ing:[
+      {n:"Large eggs",             amt:"6",         unit:"protein"},
+      {n:"Milk",                   amt:"¼ cup",     unit:"dairy"},
+      {n:"Mixed vegetables (zucchini, bell pepper, onion, spinach)",amt:"1½ cups",unit:"produce"},
+      {n:"Olive oil",              amt:"1 tbsp",    unit:"pantry"},
+      {n:"Garlic",                 amt:"2 cloves",  unit:"produce"},
+      {n:"Salt, pepper, Italian seasoning",amt:"to taste",unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 375°F.",
+      "Whisk eggs, milk, salt, and pepper together in a bowl.",
+      "Heat olive oil in an oven-safe skillet over medium. Sauté vegetables and garlic for 4–5 minutes until soft.",
+      "Pour egg mixture over vegetables. Cook undisturbed for 2 minutes until edges set.",
+      "Transfer to oven and bake 12–15 minutes until the center is just set.",
+      "Cool slightly, slice, and serve from the pan.",
+    ],
+  },
+  "Egg muffin cups": {
+    macros:{cal:260, p:24, c:8,  f:14, fiber:2},
+    ing:[
+      {n:"Large eggs",             amt:"8",         unit:"protein"},
+      {n:"Milk or oat milk",       amt:"¼ cup",     unit:"dairy"},
+      {n:"Baby spinach, chopped",  amt:"1 cup",     unit:"produce"},
+      {n:"Cherry tomatoes, halved",amt:"½ cup",     unit:"produce"},
+      {n:"Red bell pepper, diced", amt:"½ cup",     unit:"produce"},
+      {n:"Cooked turkey sausage, crumbled",amt:"½ cup",unit:"protein"},
+      {n:"Garlic powder, Italian seasoning",amt:"½ tsp each",unit:"spice"},
+      {n:"Salt and pepper",        amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 375°F. Spray a 12-cup muffin tin very generously.",
+      "Whisk eggs, milk, garlic powder, Italian seasoning, salt, and pepper.",
+      "Divide vegetables and sausage evenly among the 12 cups.",
+      "Pour egg mixture over the fillings, filling each cup ¾ full.",
+      "Bake 18–22 minutes until tops are set and just golden.",
+      "Cool 5 minutes, run a knife around each to release. Refrigerate up to 5 days.",
+    ],
+  },
+  "Turkey sausage and sweet potato hash": {
+    macros:{cal:360, p:26, c:32, f:12, fiber:5},
+    ing:[
+      {n:"Turkey sausage links, sliced",amt:"3",   unit:"protein"},
+      {n:"Sweet potatoes, small dice",amt:"2 medium",unit:"produce"},
+      {n:"Bell pepper, diced",      amt:"1",        unit:"produce"},
+      {n:"Onion, diced",            amt:"½",        unit:"produce"},
+      {n:"Garlic",                  amt:"2 cloves", unit:"produce"},
+      {n:"Olive oil",               amt:"2 tbsp",   unit:"pantry"},
+      {n:"Smoked paprika",          amt:"½ tsp",    unit:"spice"},
+      {n:"Salt and pepper",         amt:"to taste", unit:"spice"},
+    ],
+    steps:[
+      "Heat olive oil in a large skillet over medium-high.",
+      "Add sweet potatoes in a single layer. Cook undisturbed 4 minutes, then stir. Cook 4 more minutes until golden.",
+      "Add onion and bell pepper and cook 3 minutes until softened.",
+      "Add sausage and garlic and cook 3–4 minutes until sausage is browned.",
+      "Season with smoked paprika, salt, and pepper. Serve hot.",
+    ],
+  },
+  "Banana oat pancakes": {
+    macros:{cal:340, p:14, c:54, f:8,  fiber:5},
+    ing:[
+      {n:"Ripe bananas",           amt:"2",         unit:"produce"},
+      {n:"Rolled oats",            amt:"1 cup",     unit:"grains"},
+      {n:"Eggs",                   amt:"2",         unit:"protein"},
+      {n:"Milk",                   amt:"¼ cup",     unit:"dairy"},
+      {n:"Baking powder",          amt:"1 tsp",     unit:"pantry"},
+      {n:"Cinnamon",               amt:"½ tsp",     unit:"spice"},
+      {n:"Salt",                   amt:"1 pinch",   unit:"spice"},
+    ],
+    steps:[
+      "Mash bananas thoroughly in a bowl until smooth.",
+      "Blend oats in a blender until they resemble flour. Add to banana.",
+      "Stir in eggs, milk, baking powder, cinnamon, and salt until combined.",
+      "Heat a non-stick pan over medium-low with a little oil or butter.",
+      "Pour ¼ cup batter per pancake. Cook 2–3 minutes until bubbles form, then flip and cook 1–2 minutes.",
+      "Serve with honey or maple syrup and fresh fruit.",
+    ],
+  },
+  // ── LUNCHES ──
+  "Lentil soup": {
+    macros:{cal:320, p:18, c:52, f:5,  fiber:14},
+    ing:[
+      {n:"Red lentils",            amt:"1 cup",     unit:"grains"},
+      {n:"Onion, diced",           amt:"1",         unit:"produce"},
+      {n:"Carrots, diced",         amt:"2",         unit:"produce"},
+      {n:"Garlic",                 amt:"3 cloves",  unit:"produce"},
+      {n:"Cumin",                  amt:"1 tsp",     unit:"spice"},
+      {n:"Olive oil",              amt:"2 tbsp",    unit:"pantry"},
+      {n:"Broth (chicken or veg)", amt:"3 cups",    unit:"pantry"},
+      {n:"Salt and pepper",        amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Heat olive oil in a large pot over medium. Cook onion and carrots 5–7 min until softened.",
+      "Add garlic and cumin. Stir 30 seconds until fragrant.",
+      "Rinse lentils and add with broth. Bring to a boil.",
+      "Reduce to medium-low and simmer 20–25 minutes until lentils are completely soft.",
+      "Season with salt and pepper. Add water if too thick. Serve with crusty bread.",
+    ],
+  },
+  "Turkey and avocado wrap": {
+    macros:{cal:440, p:34, c:36, f:18, fiber:6},
+    ing:[
+      {n:"Deli turkey breast, sliced",amt:"4 oz",  unit:"protein"},
+      {n:"Large flour tortilla",   amt:"1",         unit:"grains"},
+      {n:"Ripe avocado",           amt:"½",         unit:"produce"},
+      {n:"Romaine lettuce",        amt:"2 leaves",  unit:"produce"},
+      {n:"Tomato, sliced",         amt:"½",         unit:"produce"},
+      {n:"Dijon mustard or hummus",amt:"1 tbsp",    unit:"pantry"},
+      {n:"Salt and pepper",        amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Lay tortilla flat. Spread mustard or hummus across the center.",
+      "Layer turkey, sliced avocado, lettuce, and tomato. Season with salt and pepper.",
+      "Fold the sides in and roll firmly. Cut in half. Eat immediately.",
+    ],
+  },
+  "Big green salad with chicken": {
+    macros:{cal:490, p:42, c:18, f:28, fiber:8},
+    ing:[
+      {n:"Mixed greens or romaine",amt:"3 cups",   unit:"produce"},
+      {n:"Cooked chicken breast or thigh",amt:"1", unit:"protein"},
+      {n:"Cherry tomatoes, halved",amt:"½ cup",    unit:"produce"},
+      {n:"Cucumber, sliced",       amt:"½",         unit:"produce"},
+      {n:"Red onion, thin sliced", amt:"¼",         unit:"produce"},
+      {n:"Olive oil",              amt:"2 tbsp",    unit:"pantry"},
+      {n:"Lemon juice or red wine vinegar",amt:"1 tbsp",unit:"pantry"},
+      {n:"Salt and pepper",        amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Slice or shred the cooked chicken.",
+      "Combine greens, tomatoes, cucumber, and onion in a large bowl.",
+      "Top with chicken. Drizzle with olive oil and lemon juice. Season and toss.",
+      "Eat immediately.",
+    ],
+  },
+  "Teriyaki chicken bowl": {
+    macros:{cal:540, p:40, c:56, f:14, fiber:5},
+    ing:[
+      {n:"Cooked chicken (thigh or breast)",amt:"1 cup, sliced",unit:"protein"},
+      {n:"Cooked brown or white rice",amt:"1 cup", unit:"grains"},
+      {n:"Broccoli florets, steamed",amt:"1 cup",  unit:"produce"},
+      {n:"Low-sodium soy sauce or tamari",amt:"2 tbsp",unit:"pantry"},
+      {n:"Honey",                   amt:"1 tbsp",  unit:"pantry"},
+      {n:"Garlic powder",           amt:"½ tsp",   unit:"spice"},
+      {n:"Sesame seeds",            amt:"1 tsp",   unit:"spice"},
+    ],
+    steps:[
+      "Whisk soy sauce, honey, and garlic powder in a small pan. Simmer 2 minutes until slightly thick.",
+      "Warm rice and broccoli.",
+      "Arrange rice in a bowl, top with sliced chicken and broccoli.",
+      "Drizzle teriyaki sauce over everything. Top with sesame seeds.",
+    ],
+  },
+  "Ground turkey chili": {
+    macros:{cal:420, p:38, c:32, f:10, fiber:10},
+    ing:[
+      {n:"Ground turkey, 93% lean", amt:"1 lb",    unit:"protein"},
+      {n:"Canned kidney beans",     amt:"1 can",   unit:"grains"},
+      {n:"Canned diced tomatoes",   amt:"1 can",   unit:"pantry"},
+      {n:"Onion, diced",            amt:"1",        unit:"produce"},
+      {n:"Garlic",                  amt:"3 cloves", unit:"produce"},
+      {n:"Bell pepper, diced",      amt:"1",        unit:"produce"},
+      {n:"Chili powder",            amt:"2 tsp",    unit:"spice"},
+      {n:"Cumin",                   amt:"1 tsp",    unit:"spice"},
+      {n:"Olive oil",               amt:"1 tbsp",   unit:"pantry"},
+    ],
+    steps:[
+      "Heat olive oil in a large pot. Cook onion and bell pepper 5 minutes.",
+      "Add turkey and cook 6–8 minutes, breaking apart, until fully browned.",
+      "Add garlic, chili powder, and cumin. Stir 1 minute.",
+      "Add diced tomatoes and drained beans. Stir and simmer 20 minutes.",
+      "Season with salt. Serve with optional toppings (sour cream, cheese, green onion).",
+    ],
+  },
+  "Black bean and sweet potato bowl": {
+    macros:{cal:460, p:16, c:72, f:10, fiber:14},
+    ing:[
+      {n:"Canned black beans, drained",amt:"1 can",unit:"grains"},
+      {n:"Sweet potato",            amt:"1 large", unit:"produce"},
+      {n:"Cooked rice or quinoa",   amt:"1 cup",   unit:"grains"},
+      {n:"Cumin, chili powder",     amt:"1 tsp each",unit:"spice"},
+      {n:"Olive oil",               amt:"2 tbsp",  unit:"pantry"},
+      {n:"Lime juice",              amt:"1 lime",  unit:"produce"},
+      {n:"Salt and pepper",         amt:"to taste",unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 400°F. Cube sweet potato, toss with olive oil, cumin, chili powder, salt.",
+      "Roast 20–25 minutes until caramelized.",
+      "Warm black beans in a small saucepan with a pinch of cumin and salt.",
+      "Assemble bowl: rice or quinoa, roasted sweet potato, black beans.",
+      "Squeeze lime over the top. Add salsa or avocado if desired.",
+    ],
+  },
+  "Chicken salad lettuce wraps": {
+    macros:{cal:310, p:34, c:6,  f:16, fiber:2},
+    ing:[
+      {n:"Cooked chicken, shredded",amt:"1½ cups", unit:"protein"},
+      {n:"Mayonnaise",              amt:"2 tbsp",  unit:"pantry"},
+      {n:"Dijon mustard",           amt:"1 tsp",   unit:"pantry"},
+      {n:"Celery, diced",           amt:"2 stalks",unit:"produce"},
+      {n:"Red onion, minced",       amt:"2 tbsp",  unit:"produce"},
+      {n:"Lemon juice",             amt:"1 tbsp",  unit:"produce"},
+      {n:"Large romaine leaves",    amt:"6",        unit:"produce"},
+      {n:"Salt and pepper",         amt:"to taste",unit:"spice"},
+    ],
+    steps:[
+      "Combine chicken, mayonnaise, mustard, celery, red onion, and lemon juice.",
+      "Season with salt and pepper. Stir well.",
+      "Spoon chicken salad into romaine leaves.",
+      "Eat as wraps. Refrigerate any leftover filling up to 3 days.",
+    ],
+  },
+  "Batch prep grain bowl": {
+    macros:{cal:480, p:36, c:48, f:12, fiber:6},
+    ing:[
+      {n:"Cooked brown rice or farro",amt:"1 cup", unit:"grains"},
+      {n:"Roasted vegetables (batch cooked)",amt:"1 cup",unit:"produce"},
+      {n:"Cooked protein (chicken or turkey)",amt:"½ cup",unit:"protein"},
+      {n:"Olive oil",               amt:"1 tbsp",  unit:"pantry"},
+      {n:"Lemon juice or vinegar",  amt:"1 tbsp",  unit:"pantry"},
+      {n:"Salt, pepper, herbs",     amt:"to taste",unit:"spice"},
+    ],
+    steps:[
+      "Pull batch-cooked components from the refrigerator.",
+      "Warm rice, vegetables, and protein in the microwave 2 minutes or in a skillet.",
+      "Assemble in a bowl. Drizzle with olive oil and lemon juice.",
+      "Season with salt and pepper. Add any sauce you have on hand.",
+    ],
+  },
+  "Chickpea and vegetable soup": {
+    macros:{cal:280, p:12, c:38, f:8,  fiber:10},
+    ing:[
+      {n:"Canned chickpeas, drained",amt:"1 can",  unit:"grains"},
+      {n:"Canned diced tomatoes",   amt:"1 can",   unit:"pantry"},
+      {n:"Onion, diced",            amt:"1",        unit:"produce"},
+      {n:"Carrots, diced",          amt:"2",        unit:"produce"},
+      {n:"Celery, diced",           amt:"2 stalks", unit:"produce"},
+      {n:"Garlic",                  amt:"3 cloves", unit:"produce"},
+      {n:"Broth (chicken or veg)",  amt:"3 cups",   unit:"pantry"},
+      {n:"Spinach or kale",         amt:"2 cups",   unit:"produce"},
+      {n:"Cumin, Italian seasoning",amt:"1 tsp each",unit:"spice"},
+      {n:"Olive oil",               amt:"2 tbsp",   unit:"pantry"},
+    ],
+    steps:[
+      "Heat olive oil in a large pot. Cook onion, carrots, and celery 5–7 minutes.",
+      "Add garlic and spices. Stir 30 seconds.",
+      "Add chickpeas, tomatoes, and broth. Bring to a boil, then simmer 15 minutes.",
+      "Stir in spinach or kale and cook 2 minutes until wilted.",
+      "Season with salt and pepper. Serve with bread.",
+    ],
+  },
+  "Egg fried rice": {
+    macros:{cal:460, p:18, c:68, f:14, fiber:4},
+    ing:[
+      {n:"Cooked white rice (day-old best)",amt:"2 cups",unit:"grains"},
+      {n:"Eggs",                    amt:"3",         unit:"protein"},
+      {n:"Frozen peas and carrots", amt:"1 cup",     unit:"produce"},
+      {n:"Green onions, sliced",    amt:"3",         unit:"produce"},
+      {n:"Low-sodium soy sauce",    amt:"2 tbsp",    unit:"pantry"},
+      {n:"Sesame oil",              amt:"1 tsp",     unit:"pantry"},
+      {n:"Vegetable oil",           amt:"2 tbsp",    unit:"pantry"},
+      {n:"Garlic",                  amt:"2 cloves",  unit:"produce"},
+    ],
+    steps:[
+      "Heat vegetable oil in a wok or large skillet over high heat.",
+      "Add rice and stir-fry 2–3 minutes, pressing it against the pan to get some crisp.",
+      "Push rice to the side. Add eggs and scramble until just set, then mix into rice.",
+      "Add frozen peas and carrots, garlic, and soy sauce. Toss everything 2–3 minutes.",
+      "Drizzle sesame oil and top with green onions. Serve immediately.",
+    ],
+  },
+  "Turkey meatball bowl": {
+    macros:{cal:440, p:38, c:42, f:12, fiber:4},
+    ing:[
+      {n:"Cooked turkey meatballs (from batch)",amt:"4–5",unit:"protein"},
+      {n:"Cooked pasta or zucchini noodles",amt:"1 cup",unit:"grains"},
+      {n:"Marinara sauce (warmed)",  amt:"½ cup",   unit:"pantry"},
+      {n:"Olive oil",                amt:"1 tsp",   unit:"pantry"},
+    ],
+    steps:[
+      "Warm meatballs in marinara sauce in a saucepan over medium heat 5 minutes.",
+      "Warm pasta or zucchini noodles.",
+      "Serve meatballs and sauce over noodles.",
+    ],
+  },
+  "Chicken stir-fry with rice noodles": {
+    macros:{cal:470, p:38, c:50, f:12, fiber:6},
+    ing:[
+      {n:"Chicken breast or thigh, sliced thin",amt:"2",unit:"protein"},
+      {n:"Rice noodles",             amt:"6 oz",    unit:"grains"},
+      {n:"Broccoli florets",         amt:"1 cup",   unit:"produce"},
+      {n:"Bell pepper, sliced",      amt:"1",        unit:"produce"},
+      {n:"Snap peas",                amt:"1 cup",   unit:"produce"},
+      {n:"Garlic",                   amt:"3 cloves",unit:"produce"},
+      {n:"Low-sodium soy sauce",     amt:"3 tbsp",  unit:"pantry"},
+      {n:"Sesame oil",               amt:"1 tsp",   unit:"pantry"},
+      {n:"Vegetable oil",            amt:"2 tbsp",  unit:"pantry"},
+      {n:"Ginger",                   amt:"1 tsp",   unit:"spice"},
+    ],
+    steps:[
+      "Soak rice noodles in hot water 8–10 minutes per package. Drain.",
+      "Whisk soy sauce, sesame oil, and ginger in a small bowl.",
+      "Heat vegetable oil in a wok over high. Cook chicken 4–5 minutes until cooked. Remove.",
+      "Add broccoli, bell pepper, snap peas, and garlic. Stir-fry 3–4 minutes.",
+      "Return chicken. Add noodles and sauce. Toss everything 1–2 minutes. Serve hot.",
+    ],
+  },
+  // ── DINNERS ──
+  "Sheet pan chicken with vegetables": {
+    macros:{cal:520, p:44, c:28, f:24, fiber:6},
+    ing:[
+      {n:"Bone-in skin-on chicken thighs",amt:"3", unit:"protein"},
+      {n:"Broccoli florets",         amt:"2 cups",  unit:"produce"},
+      {n:"Sweet potato, 1-inch cubes",amt:"1 large",unit:"produce"},
+      {n:"Red bell pepper, sliced",  amt:"1",        unit:"produce"},
+      {n:"Zucchini, half-moons",     amt:"1",        unit:"produce"},
+      {n:"Olive oil",                amt:"3 tbsp",   unit:"pantry"},
+      {n:"Garlic powder",            amt:"1 tsp",    unit:"spice"},
+      {n:"Smoked paprika",           amt:"1 tsp",    unit:"spice"},
+      {n:"Italian seasoning",        amt:"1 tsp",    unit:"spice"},
+      {n:"Salt and black pepper",    amt:"to taste", unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 425°F and line a large sheet pan with foil or parchment.",
+      "Toss all vegetables with 2 tbsp olive oil and all the seasonings until well coated.",
+      "Spread on the sheet pan in a single layer — use two pans if crowded.",
+      "Pat chicken thighs very dry. Coat with remaining olive oil and the same seasonings.",
+      "Place chicken skin-side up on top of or alongside the vegetables.",
+      "Roast 35–40 minutes, checking vegetables at 25 minutes. Pull them out if done early.",
+      "Chicken is ready when skin is deeply golden and internal temp reads 165°F.",
+      "Rest 5 minutes before serving.",
+    ],
+  },
+  "Ground turkey stir-fry": {
+    macros:{cal:480, p:42, c:36, f:14, fiber:6},
+    ing:[
+      {n:"Ground turkey, 93% lean", amt:"1.25 lbs", unit:"protein"},
+      {n:"Broccoli florets",         amt:"3 cups",   unit:"produce"},
+      {n:"Red bell pepper, sliced",  amt:"1",         unit:"produce"},
+      {n:"Snap peas",                amt:"2 cups",   unit:"produce"},
+      {n:"Garlic cloves, minced",    amt:"4",         unit:"produce"},
+      {n:"Fresh ginger, grated",     amt:"1 tbsp",   unit:"spice"},
+      {n:"Low-sodium tamari",        amt:"3 tbsp",   unit:"pantry"},
+      {n:"Honey",                    amt:"1 tbsp",   unit:"pantry"},
+      {n:"Rice vinegar",             amt:"1 tbsp",   unit:"pantry"},
+      {n:"Sesame oil",               amt:"1 tsp",    unit:"pantry"},
+      {n:"High-heat vegetable oil",  amt:"2 tbsp",   unit:"pantry"},
+      {n:"Cooked brown rice",        amt:"2 cups",   unit:"grains"},
+    ],
+    steps:[
+      "Whisk tamari, honey, rice vinegar, and sesame oil together. Set aside.",
+      "Heat vegetable oil in a wok over high heat until shimmering.",
+      "Add turkey. Cook without stirring 2 minutes for color, then break apart and cook 4–5 more minutes until browned.",
+      "Push turkey to one side. Add broccoli and bell pepper. Stir-fry 3–4 minutes.",
+      "Add snap peas and cook 1 minute. Add garlic and ginger, stir 30 seconds.",
+      "Pour sauce over everything. Toss to coat, cook 1–2 minutes until sauce thickens.",
+      "Serve over rice. Garnish with sesame seeds and green onions.",
+    ],
+  },
+  "Herb roasted chicken with root veg": {
+    macros:{cal:510, p:44, c:30, f:22, fiber:6},
+    ing:[
+      {n:"Chicken thighs (bone-in skin-on)",amt:"4",unit:"protein"},
+      {n:"Carrots, large chunks",    amt:"3",         unit:"produce"},
+      {n:"Parsnips or sweet potato", amt:"2",         unit:"produce"},
+      {n:"Red onion, quartered",     amt:"1",         unit:"produce"},
+      {n:"Garlic",                   amt:"4 cloves",  unit:"produce"},
+      {n:"Olive oil",                amt:"3 tbsp",    unit:"pantry"},
+      {n:"Dried thyme",              amt:"1 tsp",     unit:"spice"},
+      {n:"Dried rosemary",           amt:"1 tsp",     unit:"spice"},
+      {n:"Salt and black pepper",    amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 425°F.",
+      "Toss root vegetables with 2 tbsp olive oil, thyme, rosemary, salt, and pepper. Spread in a roasting pan.",
+      "Pat chicken dry. Rub with remaining olive oil, thyme, rosemary, salt, and pepper.",
+      "Place chicken skin-side up on top of the vegetables.",
+      "Roast 40–45 minutes until chicken skin is deeply golden and internal temp reads 165°F.",
+      "Rest 5 minutes. Serve chicken alongside the caramelized vegetables.",
+    ],
+  },
+  "Baked lemon herb chicken thighs": {
+    macros:{cal:420, p:40, c:4,  f:26, fiber:1},
+    ing:[
+      {n:"Chicken thighs (bone-in skin-on)",amt:"4",unit:"protein"},
+      {n:"Lemon",                    amt:"1",         unit:"produce"},
+      {n:"Garlic",                   amt:"4 cloves",  unit:"produce"},
+      {n:"Olive oil",                amt:"2 tbsp",    unit:"pantry"},
+      {n:"Dried oregano",            amt:"1 tsp",     unit:"spice"},
+      {n:"Dried thyme",              amt:"½ tsp",     unit:"spice"},
+      {n:"Salt and black pepper",    amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 425°F.",
+      "Whisk together olive oil, lemon juice, minced garlic, oregano, thyme, salt, and pepper.",
+      "Coat chicken thighs thoroughly and place skin-side up in a baking dish.",
+      "Let sit 10 minutes while the oven heats.",
+      "Bake 35–40 minutes until skin is golden and internal temp reads 165°F.",
+      "Rest 5 minutes. Serve with lemon wedges and your choice of sides.",
+    ],
+  },
+  "Stuffed bell peppers": {
+    macros:{cal:500, p:36, c:42, f:18, fiber:7},
+    ing:[
+      {n:"Bell peppers (any color)", amt:"4 large",  unit:"produce"},
+      {n:"Ground beef or turkey",    amt:"1 lb",      unit:"protein"},
+      {n:"Cooked white rice",        amt:"1 cup",     unit:"grains"},
+      {n:"Tomato sauce",             amt:"1 cup",     unit:"pantry"},
+      {n:"Onion, diced",             amt:"½",         unit:"produce"},
+      {n:"Garlic",                   amt:"2 cloves",  unit:"produce"},
+      {n:"Italian seasoning",        amt:"1 tsp",     unit:"spice"},
+      {n:"Shredded cheese",          amt:"½ cup",     unit:"dairy"},
+      {n:"Salt and pepper",          amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 375°F. Cut tops off peppers and remove seeds.",
+      "Brown ground meat with onion in a skillet, 6–8 minutes. Drain fat.",
+      "Add garlic, Italian seasoning, cooked rice, and half the tomato sauce. Stir to combine.",
+      "Season filling with salt and pepper.",
+      "Spoon filling into each pepper. Place in a baking dish. Pour remaining tomato sauce around them.",
+      "Cover with foil and bake 30 minutes. Remove foil, top with cheese, bake 10 more minutes.",
+      "Rest 5 minutes before serving.",
+    ],
+  },
+  "Pork tenderloin with root vegetables": {
+    macros:{cal:460, p:38, c:38, f:14, fiber:6},
+    ing:[
+      {n:"Pork tenderloin",          amt:"1.25 lbs",  unit:"protein"},
+      {n:"Carrots, large chunks",    amt:"3",          unit:"produce"},
+      {n:"Sweet potatoes, cubed",    amt:"2",          unit:"produce"},
+      {n:"Red onion, quartered",     amt:"1",          unit:"produce"},
+      {n:"Olive oil",                amt:"3 tbsp",     unit:"pantry"},
+      {n:"Garlic powder",            amt:"1 tsp",      unit:"spice"},
+      {n:"Dried rosemary",           amt:"1 tsp",      unit:"spice"},
+      {n:"Salt and black pepper",    amt:"to taste",   unit:"spice"},
+      {n:"Dijon mustard (optional)", amt:"1 tbsp",     unit:"pantry"},
+    ],
+    steps:[
+      "Preheat oven to 425°F.",
+      "Toss vegetables with 2 tbsp olive oil, garlic powder, rosemary, salt, and pepper. Spread on a sheet pan.",
+      "Rub pork with remaining olive oil and mustard if using. Season generously.",
+      "Place pork on top of or alongside the vegetables.",
+      "Roast 25–30 minutes until pork internal temp reads 145°F.",
+      "Rest 5–10 minutes before slicing. This step is critical — slice too early and you lose all the juice.",
+      "Serve sliced pork alongside caramelized vegetables.",
+    ],
+  },
+  "Turkey meatballs with marinara": {
+    macros:{cal:520, p:42, c:48, f:14, fiber:5},
+    ing:[
+      {n:"Ground turkey",            amt:"1 lb",      unit:"protein"},
+      {n:"Breadcrumbs",              amt:"¼ cup",     unit:"grains"},
+      {n:"Egg",                      amt:"1",          unit:"protein"},
+      {n:"Garlic powder",            amt:"1 tsp",      unit:"spice"},
+      {n:"Italian seasoning",        amt:"1 tsp",      unit:"spice"},
+      {n:"Jarred marinara sauce",    amt:"1 large jar",unit:"pantry"},
+      {n:"Pasta or zucchini noodles",amt:"8 oz",      unit:"grains"},
+      {n:"Olive oil",                amt:"2 tbsp",     unit:"pantry"},
+      {n:"Salt and pepper",          amt:"to taste",   unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 400°F. Line a sheet pan with parchment.",
+      "Combine turkey, breadcrumbs, egg, garlic powder, Italian seasoning, salt, and pepper. Mix until just combined.",
+      "Roll into 1½-inch balls. Place on sheet pan.",
+      "Bake 18–20 minutes until cooked through and lightly browned.",
+      "Meanwhile cook pasta in salted boiling water. Warm marinara in a saucepan.",
+      "Add meatballs to the sauce and simmer 5 minutes.",
+      "Serve over pasta or zucchini noodles.",
+    ],
+  },
+  "Ground beef and broccoli bowl": {
+    macros:{cal:540, p:44, c:36, f:22, fiber:5},
+    ing:[
+      {n:"Ground beef, 80/20",       amt:"1 lb",      unit:"protein"},
+      {n:"Broccoli florets",         amt:"3 cups",    unit:"produce"},
+      {n:"Garlic cloves, minced",    amt:"4",          unit:"produce"},
+      {n:"Fresh ginger, grated",     amt:"1 tbsp",    unit:"spice"},
+      {n:"Low-sodium soy sauce",     amt:"3 tbsp",    unit:"pantry"},
+      {n:"Honey",                    amt:"1 tbsp",    unit:"pantry"},
+      {n:"Sesame oil",               amt:"1 tsp",     unit:"pantry"},
+      {n:"Vegetable oil",            amt:"1 tbsp",    unit:"pantry"},
+      {n:"Cooked white rice",        amt:"2 cups",    unit:"grains"},
+    ],
+    steps:[
+      "Whisk together soy sauce, honey, and sesame oil. Set aside.",
+      "Steam or microwave broccoli until tender-crisp, about 4 minutes. Set aside.",
+      "Cook ground beef in a large skillet over medium-high, breaking apart, until fully browned. Drain fat.",
+      "Add garlic and ginger. Cook 1 minute.",
+      "Add broccoli and sauce. Toss to coat. Cook 2 minutes.",
+      "Serve over rice.",
+    ],
+  },
+  "Ground turkey and veg noodle bowl": {
+    macros:{cal:480, p:42, c:48, f:12, fiber:5},
+    ing:[
+      {n:"Ground turkey, 93% lean",  amt:"1 lb",      unit:"protein"},
+      {n:"Rice noodles or pasta",    amt:"6 oz",      unit:"grains"},
+      {n:"Mixed vegetables (carrot, zucchini, spinach)",amt:"2 cups",unit:"produce"},
+      {n:"Garlic",                   amt:"3 cloves",   unit:"produce"},
+      {n:"Low-sodium soy sauce",     amt:"2 tbsp",    unit:"pantry"},
+      {n:"Olive or vegetable oil",   amt:"2 tbsp",    unit:"pantry"},
+      {n:"Salt and pepper",          amt:"to taste",  unit:"spice"},
+    ],
+    steps:[
+      "Cook noodles per package. Drain and toss with a little oil to prevent sticking.",
+      "Brown ground turkey in a large skillet 6–8 minutes. Season with salt and pepper.",
+      "Add garlic and vegetables. Cook 4–5 minutes until tender.",
+      "Add noodles and soy sauce. Toss everything together over heat 1–2 minutes.",
+      "Serve hot.",
+    ],
+  },
+  "Pulled chicken tacos": {
+    macros:{cal:460, p:38, c:44, f:10, fiber:6},
+    ing:[
+      {n:"Chicken thighs (boneless skinless)",amt:"1.5 lbs",unit:"protein"},
+      {n:"Chicken broth",            amt:"½ cup",     unit:"pantry"},
+      {n:"Garlic powder, cumin, smoked paprika",amt:"1 tsp each",unit:"spice"},
+      {n:"Corn or flour tortillas",  amt:"8",          unit:"grains"},
+      {n:"Toppings: shredded cabbage, salsa, lime, avocado",amt:"as desired",unit:"produce"},
+      {n:"Salt and pepper",          amt:"to taste",   unit:"spice"},
+    ],
+    steps:[
+      "Season chicken thighs with garlic powder, cumin, smoked paprika, salt, and pepper.",
+      "Place in a pot or deep skillet. Add broth. Cover and simmer over medium-low 25–30 minutes until very tender.",
+      "Shred chicken with two forks. Mix back into the cooking juices.",
+      "Warm tortillas in a dry pan or directly over a flame.",
+      "Fill each tortilla with pulled chicken and your toppings of choice.",
+    ],
+  },
+  "Black bean tacos with mango salsa": {
+    macros:{cal:420, p:14, c:68, f:10, fiber:14},
+    ing:[
+      {n:"Canned black beans, drained",amt:"2 cans", unit:"grains"},
+      {n:"Corn or flour tortillas",  amt:"8",          unit:"grains"},
+      {n:"Mango, diced",             amt:"1",           unit:"produce"},
+      {n:"Red onion, finely diced",  amt:"¼",           unit:"produce"},
+      {n:"Cilantro, chopped",        amt:"¼ cup",       unit:"produce"},
+      {n:"Jalapeño (optional)",      amt:"½",           unit:"produce"},
+      {n:"Lime",                     amt:"1",            unit:"produce"},
+      {n:"Cumin, chili powder",      amt:"1 tsp each",  unit:"spice"},
+      {n:"Shredded cabbage",         amt:"1 cup",       unit:"produce"},
+    ],
+    steps:[
+      "Make mango salsa: combine diced mango, red onion, cilantro, jalapeño if using, and lime juice. Season with salt.",
+      "Warm black beans in a saucepan with cumin, chili powder, and a pinch of salt.",
+      "Warm tortillas in a dry pan.",
+      "Fill each tortilla with seasoned black beans, shredded cabbage, and mango salsa.",
+      "Squeeze extra lime over the top before eating.",
+    ],
+  },
+  "Honey garlic chicken thighs": {
+    macros:{cal:490, p:38, c:40, f:20, fiber:6},
+    ing:[
+      {n:"Chicken thighs (bone-in skin-on)",amt:"4",unit:"protein"},
+      {n:"Garlic cloves, minced",    amt:"5",          unit:"produce"},
+      {n:"Honey",                    amt:"3 tbsp",      unit:"pantry"},
+      {n:"Low-sodium soy sauce",     amt:"2 tbsp",      unit:"pantry"},
+      {n:"Olive oil",                amt:"1 tbsp",      unit:"pantry"},
+      {n:"Salt and black pepper",    amt:"to taste",    unit:"spice"},
+    ],
+    steps:[
+      "Preheat oven to 425°F.",
+      "Whisk together honey, soy sauce, and minced garlic.",
+      "Pat chicken dry. Season with salt and pepper.",
+      "Heat olive oil in an oven-safe skillet over medium-high. Sear chicken skin-side down 5 minutes until golden.",
+      "Flip. Pour honey garlic sauce over the chicken.",
+      "Transfer to oven and bake 20–25 minutes until internal temp reads 165°F.",
+      "Baste with pan juices once halfway through. Serve with rice and vegetables.",
+    ],
+  },
+  "Lemon herb chicken with wilted greens": {
+    macros:{cal:440, p:40, c:28, f:18, fiber:4},
+    ing:[
+      {n:"Chicken thighs (boneless skinless)",amt:"4",unit:"protein"},
+      {n:"Kale or spinach",          amt:"4 cups",     unit:"produce"},
+      {n:"Cooked white or brown rice",amt:"2 cups",   unit:"grains"},
+      {n:"Lemon",                    amt:"1",            unit:"produce"},
+      {n:"Garlic",                   amt:"3 cloves",    unit:"produce"},
+      {n:"Olive oil",                amt:"2 tbsp",      unit:"pantry"},
+      {n:"Dried thyme or oregano",   amt:"1 tsp",       unit:"spice"},
+      {n:"Salt and black pepper",    amt:"to taste",    unit:"spice"},
+    ],
+    steps:[
+      "Season chicken with lemon zest, thyme or oregano, salt, and pepper.",
+      "Heat 1 tbsp olive oil in a skillet over medium-high. Cook chicken 5–6 minutes per side until golden and cooked through (165°F). Rest 3 minutes.",
+      "In the same skillet, heat remaining olive oil over medium. Add garlic and cook 30 seconds.",
+      "Add greens and a squeeze of lemon. Toss until just wilted, about 2 minutes.",
+      "Slice chicken. Serve over rice with wilted greens alongside.",
+    ],
+  },
+  "Slow cooker pulled chicken": {
+    macros:{cal:490, p:42, c:48, f:14, fiber:7},
+    ing:[
+      {n:"Chicken thighs (boneless skinless)",amt:"2 lbs",unit:"protein"},
+      {n:"Chicken broth",            amt:"½ cup",       unit:"pantry"},
+      {n:"Garlic powder, onion powder",amt:"1 tsp each",unit:"spice"},
+      {n:"Smoked paprika",           amt:"1 tsp",       unit:"spice"},
+      {n:"Sweet potato, cubed and roasted",amt:"2 large",unit:"produce"},
+      {n:"Salt and black pepper",    amt:"to taste",    unit:"spice"},
+    ],
+    steps:[
+      "Season chicken with all spices. Place in slow cooker with broth.",
+      "Cook on HIGH 3–4 hours or LOW 6–7 hours until very tender.",
+      "Shred chicken with two forks. Mix back into juices.",
+      "Roast sweet potatoes at 400°F with olive oil, salt, and pepper for 25 minutes.",
+      "Serve pulled chicken over roasted sweet potato.",
+    ],
+  },
+  // ── LEFTOVERS ──
+  "Leftover sheet pan chicken":    {ing:[{n:"Leftover sheet pan chicken",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover baked chicken":        {ing:[{n:"Leftover baked lemon herb chicken",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover herb roasted chicken": {ing:[{n:"Leftover herb roasted chicken",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover pork tenderloin":      {ing:[{n:"Leftover pork tenderloin",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover pulled chicken":       {ing:[{n:"Leftover pulled chicken",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover turkey stir-fry":      {ing:[{n:"Leftover ground turkey stir-fry",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Leftover Sunday batch":         {ing:[{n:"Leftover batch cook from Sunday",amt:"1 serving",unit:"protein"}],steps:[]},
+  "Meal prep batch — double dinner":{ing:[{n:"Double all dinner quantities — portion and refrigerate",amt:"×2",unit:"pantry"}],steps:["Double the quantities of tonight's dinner recipe.","Eat one portion tonight.","Store the rest in airtight containers. Refrigerate up to 4 days.","Use for lunches throughout the week."]},
+};
+
 
 function Svg({path,size=20,color="currentColor",sw=1.5}) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
@@ -162,9 +900,21 @@ export default function App() {
   const [evDate,setEvDate]       = useState("2025-01-14");
   const [expWeek,setExpWeek]     = useState(null);
 
-  // ── TOUR STATE ────────────────────────────────────────────────
-  const [tourDone,setTourDone]   = useState(false);
-  const [tourStep,setTourStep]   = useState(0);
+  // ── TOUR STATE — version-aware, resets on every app update ────
+  const [seenVersion,setSeenVersion] = useState(()=>
+    typeof window!=="undefined" ? (window.__sovereignTourVersion||null) : null
+  );
+  const [tourDone,setTourDone] = useState(false);
+  const [tourStep,setTourStep] = useState(0);
+  // Reset tutorial whenever APP_VERSION changes
+  useEffect(()=>{
+    if(seenVersion !== APP_VERSION){
+      setTourDone(false);
+      setTourStep(0);
+      if(typeof window!=="undefined") window.__sovereignTourVersion = APP_VERSION;
+      setSeenVersion(APP_VERSION);
+    }
+  },[]);
   const [tourDiet,setTourDiet]   = useState({nutAllergy:false,gbp:false,mthfr:false,gerd:false,gf:false,df:false});
   const [tourSched,setTourSched] = useState(null);
   const [tourDay,setTourDay]     = useState("Sat");
@@ -224,20 +974,27 @@ export default function App() {
   const sw = sleepWin();
 
   // ── Planner items ──
+  // Pull today's meals from WEEK_PLAN — navigate nested {week, days[]} structure
+  const todayIdx = (new Date().getDay() + 6) % 7; // Mon=0 … Sun=6
+  const todayPlan = (WEEK_PLAN[0].days && WEEK_PLAN[0].days[todayIdx]) || WEEK_PLAN[0].days[0];
+  const todayB = todayPlan ? todayPlan.meals.b : "Breakfast";
+  const todayL = todayPlan ? todayPlan.meals.l : "Lunch";
+  const todayD = todayPlan ? todayPlan.meals.d : "Dinner";
+
   const ITEMS = imp ? [
     {id:"decl",label:"Morning Declaration",sub:"Stand. Both feet. Speak the Axiom aloud.",time:"Before all else",col:T.gold},
-    {id:"b",label:"Breakfast — Oats with banana and sunflower seed butter",time:"8:00 AM",col:T.cNour},
+    {id:"b",label:`Breakfast — ${todayB}`,time:"8:00 AM",col:T.cNour},
     {id:"hyd",label:"First 24 oz of water — before coffee",time:"9:00 AM",col:T.cBody},
-    {id:"l",label:"Lunch — Lentil soup with bread",time:"12:30 PM",col:T.cNour},
+    {id:"l",label:`Lunch — ${todayL}`,time:"12:30 PM",col:T.cNour},
     {id:"mid",label:"Midday Anchor — 12 minutes, timer, no screen",time:"2:00 PM",col:T.cMind},
-    {id:"d",label:"Dinner — Sheet pan chicken, potatoes, broccoli",time:"6:00 PM",col:T.cNour},
+    {id:"d",label:`Dinner — ${todayD}`,time:"6:00 PM",col:T.cNour},
     {id:"inv",label:"Evening Inventory — three questions in writing",time:"9:00 PM",col:T.cMind},
   ] : [
     {id:"quiet",label:"Morning Quiet — twenty minutes before anything",time:"Before all else",col:T.cMind},
     {id:"decl",label:"Morning Declaration — speak the Axiom aloud",time:"When ready",col:T.gold},
-    {id:"b",label:"Breakfast — Oats with banana and sunflower seed butter",time:"8:00 AM",col:T.cNour},
-    {id:"l",label:"Lunch — Lentil soup with bread",time:"12:30 PM",col:T.cNour},
-    {id:"d",label:"Dinner — Sheet pan chicken, potatoes, broccoli",time:"6:00 PM",col:T.cNour},
+    {id:"b",label:`Breakfast — ${todayB}`,time:"8:00 AM",col:T.cNour},
+    {id:"l",label:`Lunch — ${todayL}`,time:"12:30 PM",col:T.cNour},
+    {id:"d",label:`Dinner — ${todayD}`,time:"6:00 PM",col:T.cNour},
     {id:"yours",label:"Replenishment Session — two hours, once this week",time:"This week",col:T.cSoul},
     {id:"inv",label:"Evening Inventory — two questions in writing",time:"Before sleep",col:T.cMind},
   ];
@@ -251,11 +1008,27 @@ export default function App() {
   const days7 = ["M","T","W","T","F","S","S"];
 
   function showT(m){setToast(m);setTimeout(()=>setToast(null),2000);}
-  function addCart(name,cat="Other"){
-    const k=name.toLowerCase();
-    if(cart[k]){showT("Already in cart");return;}
-    setCart(p=>({...p,[k]:{name,cat,checked:false}}));
-    showT("Added: "+name);
+
+  function addIngredient(ing) {
+    const k = ing.n.toLowerCase().trim();
+    setCart(prev => {
+      if (prev[k]) {
+        return {...prev, [k]: {...prev[k], count: prev[k].count + 1}};
+      }
+      return {...prev, [k]: {name:ing.n, amt:ing.amt, unit:ing.unit||"pantry", count:1, checked:false}};
+    });
+    showT("+ " + ing.n);
+  }
+
+  function addAllIngredients(mealName) {
+    const rec = RECIPES[mealName];
+    if (!rec) { showT("No recipe data"); return; }
+    rec.ing.forEach(ing => addIngredient(ing));
+    showT("All ingredients added");
+  }
+
+  function removeCartItem(k) {
+    setCart(prev => { const n={...prev}; delete n[k]; return n; });
   }
   function goNav(k){setNav(k);setHub(null);setShowMood(false);setShowOT(false);}
 
@@ -292,7 +1065,7 @@ export default function App() {
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",textAlign:"center"}}>
           {imp?<SigilImp/>:<SigilTend/>}
           <div style={{fontFamily:COR,fontSize:28,color:T.gold,letterSpacing:"0.16em",textTransform:"uppercase",marginTop:20,marginBottom:10}}>{T.name}</div>
-          <div style={{fontFamily:COR,fontSize:18,color:T.text,letterSpacing:"0.1em",marginBottom:20}}>You are {T.title}.</div>
+          <div style={{fontFamily:COR,fontSize:18,color:T.text,letterSpacing:"0.1em",marginBottom:20}}>You are {T.epithet}.</div>
           <div style={{fontSize:13,color:T.t2,lineHeight:1.8}}>
             {imp?"This app is your operating system. Not a habit tracker. Not a wellness app. An architecture for a specific kind of mind."
                :"This app tends what matters. Including you. Built around the way you already give — and what you need in return."}
@@ -450,6 +1223,167 @@ export default function App() {
             ))}
           </div>
           <div style={{fontSize:12,color:T.t3,marginTop:16,fontStyle:"italic"}}>Build the foundation first. Everything else is waiting.</div>
+        </div>
+      )
+    },
+    {
+      key:"invite",
+      render:()=>{
+        const hhCode = imp ? "IMP-284" : "TEND-751";
+        const ghLink = "https://xpliciton3.github.io/Imperium";
+        const fullMsg = `Join my household on ${imp?"The Imperium":"The Tending"}:\nDownload: ${ghLink}\nHousehold code: ${hhCode}`;
+        return (
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",textAlign:"center"}}>
+            <div style={{fontSize:36,marginBottom:12}}>🏠</div>
+            <div style={{fontFamily:COR,fontSize:22,color:T.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Invite Your Household</div>
+            <div style={{fontSize:12,color:T.t2,lineHeight:1.8,marginBottom:18}}>
+              {imp
+                ?"The Imperium syncs with your partner. Your planner. Their planner. One household. Send Holli the link and code."
+                :"The Tending was built for someone who gives a lot. Let your household show up for you too. Send Garrin the link and code."}
+            </div>
+            <div style={{background:T.s2,border:`1px solid ${T.b2}`,borderRadius:8,padding:"14px 18px",width:"100%",marginBottom:14}}>
+              <div style={{fontSize:8,color:T.t3,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:6}}>Household Code</div>
+              <div style={{fontFamily:COR,fontSize:30,color:T.gold,letterSpacing:"0.24em",marginBottom:10}}>{hhCode}</div>
+              <div style={{fontSize:8,color:T.t3,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:3}}>Download Link</div>
+              <div style={{fontSize:11,color:T.t2,wordBreak:"break-all",lineHeight:1.5}}>{ghLink}</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%"}}>
+              <button onClick={()=>{
+                if(navigator.share){navigator.share({title:`Join ${imp?"The Imperium":"The Tending"}`,text:fullMsg,url:ghLink}).catch(()=>{});}
+                else if(navigator.clipboard){navigator.clipboard.writeText(fullMsg);alert("Copied — paste it to your partner.");}
+              }} style={{width:"100%",padding:"11px 0",background:T.gold,border:"none",color:"#000",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",cursor:"pointer",borderRadius:5,fontWeight:700}}>Share Link + Code</button>
+              <button onClick={()=>{if(navigator.clipboard){navigator.clipboard.writeText(fullMsg);alert("Copied to clipboard.");}}}
+                style={{width:"100%",padding:"9px 0",background:"transparent",border:`1px solid ${T.b2}`,color:T.t2,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",borderRadius:5}}>Copy to Clipboard</button>
+              <button onClick={()=>setTourStep(s=>s+1)}
+                style={{background:"transparent",border:"none",color:T.t3,fontSize:10,cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase"}}>Set up later →</button>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      key:"groq",
+      render:()=>(
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 22px"}}>
+          <div style={{textAlign:"center",marginBottom:18}}>
+            <div style={{fontSize:34,marginBottom:10}}>🤖</div>
+            <div style={{fontFamily:COR,fontSize:22,color:T.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Groq API Key</div>
+            <div style={{fontSize:12,color:T.t2,lineHeight:1.8}}>The AI features — mood translation, daily quotes, smart planning — run on Groq. Free. No credit card required. 14,400 requests per day.</div>
+          </div>
+          <div style={{background:T.s2,border:`1px solid ${T.b2}`,borderRadius:8,padding:"14px 16px",marginBottom:14}}>
+            <div style={{fontSize:8,color:T.t3,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>How to get your free key</div>
+            {[
+              "Go to console.groq.com",
+              "Sign up — email only, no payment",
+              'Click "API Keys" in the left sidebar',
+              'Click "Create API Key"',
+              "Copy the key — it starts with gsk_",
+              "Paste it in Settings → API Keys after setup",
+            ].map((step,i)=>(
+              <div key={i} style={{display:"flex",gap:10,padding:"5px 0",borderBottom:`1px solid ${T.b1}22`}}>
+                <span style={{color:T.gold,fontSize:10,fontWeight:"bold",minWidth:16,flexShrink:0}}>{i+1}.</span>
+                <span style={{fontSize:12,color:T.t2}}>{step}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{background:`rgba(${imp?"201,168,76":"196,120,120"},0.06)`,border:`1px solid ${T.gold}33`,borderRadius:6,padding:"10px 14px"}}>
+            <div style={{fontSize:10,color:T.t3,lineHeight:1.7}}>Without a Groq key the app still works — quotes use the built-in fallback bank and mood uses preset translations. You can add the key any time in Settings.</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key:"firebase",
+      render:()=>(
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 22px"}}>
+          <div style={{textAlign:"center",marginBottom:18}}>
+            <div style={{fontSize:34,marginBottom:10}}>🔥</div>
+            <div style={{fontFamily:COR,fontSize:22,color:T.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Firebase Sync</div>
+            <div style={{fontSize:12,color:T.t2,lineHeight:1.8}}>Firebase keeps your household in sync — mood, grocery cart, planner. Free Spark plan. No credit card.</div>
+          </div>
+          <div style={{background:T.s2,border:`1px solid ${T.b2}`,borderRadius:8,padding:"14px 16px",marginBottom:14}}>
+            <div style={{fontSize:8,color:T.t3,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>One-time setup (5 minutes)</div>
+            {[
+              "Go to console.firebase.google.com",
+              "Sign in with Google → Add Project",
+              'Name it "SovereignWorks" → Continue',
+              "Build → Realtime Database → Create database",
+              'Choose "Start in test mode" → Enable',
+              "Project Settings → Your apps → Web app (</>)",
+              "Copy the firebaseConfig object",
+              "Paste it in Settings → Firebase Config",
+            ].map((step,i)=>(
+              <div key={i} style={{display:"flex",gap:10,padding:"5px 0",borderBottom:`1px solid ${T.b1}22`}}>
+                <span style={{color:T.gold,fontSize:10,fontWeight:"bold",minWidth:16,flexShrink:0}}>{i+1}.</span>
+                <span style={{fontSize:12,color:T.t2,lineHeight:1.5}}>{step}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{background:`rgba(${imp?"201,168,76":"196,120,120"},0.06)`,border:`1px solid ${T.gold}33`,borderRadius:6,padding:"10px 14px"}}>
+            <div style={{fontSize:10,color:T.t3,lineHeight:1.7}}>Without Firebase the app works fully — everything saves locally. Firebase only adds the household sync layer. You can set it up any time in Settings.</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key:"notifications",
+      render:()=>(
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 22px"}}>
+          <div style={{textAlign:"center",marginBottom:18}}>
+            <div style={{fontSize:34,marginBottom:10}}>🔔</div>
+            <div style={{fontFamily:COR,fontSize:22,color:T.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Notifications & Alarms</div>
+            <div style={{fontSize:12,color:T.t2,lineHeight:1.8}}>The app will ask for notification permission. This powers the alarm system, hydration reminders, and batch cook alerts.</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",marginBottom:16}}>
+            {[
+              {icon:"⏰",label:"Alarms",desc:"Full-screen over lock screen. Native Android."},
+              {icon:"💧",label:"Hydration reminders",desc:"Configurable intervals. Off duty and on duty differ."},
+              {icon:"🍳",label:"Batch cook alerts",desc:"Night before a prep day: what to start tonight."},
+              {icon:"🌙",label:"Sleep window",desc:"Wind-down notification at your scheduled bedtime."},
+            ].map((item,i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",background:T.s2,border:`1px solid ${T.b1}`,borderRadius:7,padding:"10px 14px"}}>
+                <span style={{fontSize:20,flexShrink:0}}>{item.icon}</span>
+                <div>
+                  <div style={{fontSize:12,color:T.text,marginBottom:2}}>{item.label}</div>
+                  <div style={{fontSize:10,color:T.t3,lineHeight:1.5}}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{fontSize:11,color:T.t3,textAlign:"center",fontStyle:"italic"}}>When Android asks for permission — allow it. The app cannot function as an alarm without it.</div>
+        </div>
+      )
+    },
+    {
+      key:"settings_tour",
+      render:()=>(
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 22px"}}>
+          <div style={{textAlign:"center",marginBottom:18}}>
+            <div style={{fontSize:34,marginBottom:10}}>⚙️</div>
+            <div style={{fontFamily:COR,fontSize:22,color:T.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>Settings Overview</div>
+            <div style={{fontSize:12,color:T.t2,lineHeight:1.8}}>Everything you just set up lives here. You can return any time.</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:6,width:"100%"}}>
+            {[
+              {label:"API Keys",desc:"Groq key for AI features",icon:"🔑"},
+              {label:"Firebase Config",desc:"Paste your firebaseConfig object here",icon:"🔥"},
+              {label:"Household",desc:"Your code, partner's code, sync status",icon:"🏠"},
+              {label:"Work Schedule",desc:"Shift type, start/end times, overtime rules",icon:"📅"},
+              {label:"Dietary Filters",desc:"Nut allergy, GERD, gluten-free, dairy-free",icon:"🥗"},
+              {label:"Hydration Targets",desc:"Daily oz goal by shift type",icon:"💧"},
+              {label:"Notifications",desc:"Which alerts fire and when",icon:"🔔"},
+              {label:"Reset Tutorial",desc:"Re-runs this setup from the beginning",icon:"🔄"},
+            ].map((item,i)=>(
+              <div key={i} style={{display:"flex",gap:10,alignItems:"center",background:T.s2,border:`1px solid ${T.b1}`,borderRadius:6,padding:"8px 12px"}}>
+                <span style={{fontSize:16,flexShrink:0}}>{item.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:T.text}}>{item.label}</div>
+                  <div style={{fontSize:10,color:T.t3}}>{item.desc}</div>
+                </div>
+                <span style={{fontSize:10,color:T.gold}}>→</span>
+              </div>
+            ))}
+          </div>
         </div>
       )
     },
@@ -865,6 +1799,9 @@ export default function App() {
                             {item.sub&&!isOpen&&<div style={{fontSize:9,color:item.col+"99",marginTop:1}}>{item.sub}</div>}
                           </div>
                           <span style={{width:5,height:5,borderRadius:"50%",background:item.col,flexShrink:0}}/>
+                          {item.id==="bed"&&sw&&(
+                            <button onClick={(e)=>{e.stopPropagation();setShowAlarm(true);setAlPhase("ring");}} style={{padding:"3px 9px",background:"transparent",border:`1px solid #4a6a9a`,borderRadius:3,color:"#5a80b0",fontSize:8,cursor:"pointer",letterSpacing:"0.04em",textTransform:"uppercase",flexShrink:0,marginRight:4}}>Set Alarm</button>
+                          )}
                           <button onClick={()=>setExpHome(isOpen?null:item.id)} style={{background:"transparent",border:`1px solid ${T.b2}`,borderRadius:4,padding:"3px 7px",color:isOpen?item.col:T.t3,fontSize:8.5,cursor:"pointer"}}>{isOpen?"▲":"▼"}</button>
                         </div>
                         {isOpen&&(
@@ -902,9 +1839,59 @@ export default function App() {
                               </div>
                             </>)}
                               {item.id==="bed"&&`Wind down at ${sw&&sw.wd}. Sleep by ${sw&&sw.sl}. Wake at ${sw&&sw.wk}. ${sw&&sw.note}.`}
-                              {(item.id==="b"||item.id==="l"||item.id==="d")&&"Today's meal. One household, one plan. See Nourish tab for full recipe and Add to Cart for ingredients."}
                             </p>
-                            <button onClick={()=>{setDone(p=>({...p,[item.id]:true}));setExpHome(null);}} style={{width:"100%",padding:"9px 0",background:T.tealBg,border:`1px solid ${T.teal}`,color:T.teal,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",borderRadius:5}}>Complete</button>
+                            {(item.id==="b"||item.id==="l"||item.id==="d")&&(()=>{
+                              const mealName=item.label.includes(" — ")?item.label.split(" — ")[1]:item.label;
+                              const rec=RECIPES[mealName];
+                              return rec?(
+                                <div>
+                                  {/* ── Ingredients ── */}
+                                  <div style={{fontSize:7.5,color:T.cNour,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Ingredients</div>
+                                  {rec.ing.map((ing,idx)=>(
+                                    <div key={idx} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${T.b1}33`}}>
+                                      <div style={{flex:1}}>
+                                        <span style={{fontSize:12,color:T.text}}>{ing.n}</span>
+                                        <span style={{fontSize:9.5,color:T.t2,marginLeft:6}}>{ing.amt}</span>
+                                      </div>
+                                      <button onClick={(e)=>{e.stopPropagation();addIngredient(ing);}} style={{padding:"3px 8px",background:"transparent",border:`1px solid ${T.cNour}55`,borderRadius:3,color:T.cNour,fontSize:8,cursor:"pointer",flexShrink:0,marginLeft:6}}>+ Cart</button>
+                                    </div>
+                                  ))}
+                                  <button onClick={(e)=>{e.stopPropagation();addAllIngredients(mealName);}} style={{marginTop:8,marginBottom:14,width:"100%",padding:"5px 0",background:`rgba(${imp?"224,88,40":"192,96,72"},0.07)`,border:`1px solid ${T.cNour}33`,borderRadius:4,color:T.cNour,fontSize:8,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase"}}>+ Add All to Cart</button>
+                                  {/* ── Cooking steps ── */}
+                                  {/* Macro strip */}
+                                  {rec.macros&&(
+                                    <div style={{display:"flex",gap:4,marginBottom:10,flexWrap:"wrap"}}>
+                                      {[
+                                        {label:"CAL", val:rec.macros.cal},
+                                        {label:"PRO", val:rec.macros.p+"g"},
+                                        {label:"CARB",val:rec.macros.c+"g"},
+                                        {label:"FAT", val:rec.macros.f+"g"},
+                                        {label:"FIBER",val:rec.macros.fiber+"g"},
+                                      ].map(m=>(
+                                        <div key={m.label} style={{flex:1,minWidth:46,background:T.s1,border:`1px solid ${T.b2}`,borderRadius:4,padding:"4px 0",textAlign:"center"}}>
+                                          <div style={{fontSize:7,color:T.t3,letterSpacing:"0.1em"}}>{m.label}</div>
+                                          <div style={{fontSize:11,color:T.text,fontWeight:600}}>{m.val}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {rec.steps&&rec.steps.length>0&&(
+                                    <>
+                                      <div style={{fontSize:7.5,color:T.cNour,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>How to Make It</div>
+                                      {rec.steps.map((step,i)=>(
+                                        <div key={i} style={{display:"flex",gap:8,padding:"5px 0",borderBottom:`1px solid ${T.b1}22`}}>
+                                          <span style={{fontSize:10,color:T.cNour,fontWeight:"bold",flexShrink:0,minWidth:16}}>{i+1}.</span>
+                                          <span style={{fontSize:12,color:T.t2,lineHeight:1.6}}>{step}</span>
+                                        </div>
+                                      ))}
+                                    </>
+                                  )}
+                                </div>
+                              ):(
+                                <div style={{fontSize:11,color:T.t3,fontStyle:"italic",marginBottom:10}}>Leftover — no prep needed</div>
+                              );
+                            })()}
+                            <button onClick={()=>{setDone(p=>({...p,[item.id]:true}));setExpHome(null);}} style={{marginTop:12,width:"100%",padding:"9px 0",background:T.tealBg,border:`1px solid ${T.teal}`,color:T.teal,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",borderRadius:5}}>Complete</button>
                           </div>
                         )}
                       </div>
@@ -1096,6 +2083,26 @@ export default function App() {
                             </div>
                             <span style={{color:expWeek===wi?T.cNour:T.t3,fontSize:16}}>{expWeek===wi?"▲":"▼"}</span>
                           </div>
+                          {expWeek===wi&&(
+                            <div style={{padding:"8px 13px",borderBottom:`1px solid ${T.b1}`,background:T.s2}}>
+                              <button onClick={()=>{
+                                let count=0;
+                                wk.days.forEach(d=>{
+                                  ["b","l","d"].forEach(slot=>{
+                                    const mn=d.meals[slot];
+                                    const tgs=d.tags[slot];
+                                    if(mealPassesFilter(tgs)&&RECIPES[mn]){
+                                      RECIPES[mn].ing.forEach(ig=>addIngredient(ig));
+                                      count++;
+                                    }
+                                  });
+                                });
+                                showT("Week "+(wi+1)+" — ingredients added");
+                              }} style={{width:"100%",padding:"7px 0",background:`rgba(${imp?"224,88,40":"192,96,72"},0.08)`,border:`1px solid ${T.cNour}44`,borderRadius:4,color:T.cNour,fontSize:8.5,cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:JOS}}>
+                                + Add All Week {wi+1} Ingredients to Cart
+                              </button>
+                            </div>
+                          )}
                           {expWeek===wi&&wk.days.map((day,di)=>{
                             const dayKey=`${wi}-${di}`;
                             const isDayOpen=expDay===dayKey;
@@ -1117,19 +2124,70 @@ export default function App() {
                                       const mealName=day.meals[slot];
                                       const tags=day.tags[slot];
                                       const blocked=!mealPassesFilter(tags);
+                                      const rec=RECIPES[mealName];
                                       return (
-                                        <div key={slot} style={{background:blocked?"rgba(192,112,40,0.06)":T.s3,border:`1px solid ${blocked?"rgba(192,112,40,0.3)":T.b1}`,borderRadius:6,padding:"9px 11px",marginBottom:6}}>
-                                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                                            <div>
+                                        <div key={slot} style={{background:blocked?"rgba(192,112,40,0.06)":T.s3,border:`1px solid ${blocked?"rgba(192,112,40,0.3)":T.b1}`,borderRadius:6,marginBottom:6,overflow:"hidden"}}>
+                                          {/* Meal header */}
+                                          <div style={{padding:"9px 11px",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                                            <div style={{flex:1}}>
                                               <div style={{fontSize:8,color:blocked?"#c07040":T.cNour,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:2}}>{slot==="b"?"Breakfast":slot==="l"?"Lunch":"Dinner"}</div>
                                               <div style={{fontSize:13,color:blocked?T.t3:T.text,textDecoration:blocked?"line-through":"none"}}>{mealName}</div>
                                               {blocked&&<div style={{fontSize:9,color:"#c07040",marginTop:2}}>Not NF-tagged — swap needed</div>}
                                             </div>
-                                            <div style={{display:"flex",gap:3,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:100}}>
+                                            <div style={{display:"flex",gap:3,flexWrap:"wrap",justifyContent:"flex-end",maxWidth:80}}>
                                               {tags.map(t=><span key={t} style={{fontSize:7,padding:"1px 4px",border:`1px solid ${t==="NF"?"#5a9a5a":T.b2}`,borderRadius:2,color:t==="NF"?"#5a9a5a":T.t3}}>{t}</span>)}
                                             </div>
                                           </div>
-                                          {!blocked&&<button onClick={()=>addCart(mealName)} style={{marginTop:7,width:"100%",padding:"6px 0",background:"transparent",border:`1px solid ${T.cNour}44`,borderRadius:4,color:T.cNour,fontSize:9,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase"}}>+ Add Ingredients to Cart</button>}
+                                          {/* Ingredient list */}
+                                          {!blocked&&rec&&(
+                                            <div style={{borderTop:`1px solid ${T.b1}`,padding:"8px 11px 10px"}}>
+                                              {/* Macro strip */}
+                                              {rec.macros&&(
+                                                <div style={{display:"flex",gap:4,marginBottom:10,flexWrap:"wrap"}}>
+                                                  {[
+                                                    {label:"CAL", val:rec.macros.cal, unit:""},
+                                                    {label:"PRO", val:rec.macros.p+"g", unit:""},
+                                                    {label:"CARB",val:rec.macros.c+"g", unit:""},
+                                                    {label:"FAT", val:rec.macros.f+"g", unit:""},
+                                                    {label:"FIBER",val:rec.macros.fiber+"g",unit:""},
+                                                  ].map(m=>(
+                                                    <div key={m.label} style={{flex:1,minWidth:46,background:T.s1,border:`1px solid ${T.b2}`,borderRadius:4,padding:"4px 0",textAlign:"center"}}>
+                                                      <div style={{fontSize:7,color:T.t3,letterSpacing:"0.1em"}}>{m.label}</div>
+                                                      <div style={{fontSize:11,color:T.text,fontWeight:600}}>{m.val}</div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
+                                              <div style={{fontSize:7.5,color:T.cNour,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Ingredients</div>
+                                              {rec.ing.map((ing,idx)=>(
+                                                <div key={idx} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${T.b1}33`}}>
+                                                  <div style={{flex:1}}>
+                                                    <span style={{fontSize:12,color:T.text}}>{ing.n}</span>
+                                                    <span style={{fontSize:9.5,color:T.t2,marginLeft:6}}>{ing.amt}</span>
+                                                  </div>
+                                                  <button onClick={(e)=>{e.stopPropagation();addIngredient(ing);}} style={{padding:"3px 8px",background:"transparent",border:`1px solid ${T.cNour}55`,borderRadius:3,color:T.cNour,fontSize:8,cursor:"pointer",letterSpacing:"0.04em",flexShrink:0,marginLeft:6}}>+ Cart</button>
+                                                </div>
+                                              ))}
+                                              <button onClick={(e)=>{e.stopPropagation();addAllIngredients(mealName);}} style={{marginTop:8,width:"100%",padding:"5px 0",background:`rgba(${imp?"224,88,40":"192,96,72"},0.07)`,border:`1px solid ${T.cNour}33`,borderRadius:4,color:T.cNour,fontSize:8,cursor:"pointer",letterSpacing:"0.08em",textTransform:"uppercase"}}>+ Add All to Cart</button>
+                                              {/* ── Cooking steps ── */}
+                                              {rec.steps&&rec.steps.length>0&&(
+                                                <>
+                                                  <div style={{fontSize:7.5,color:T.cNour,letterSpacing:"0.12em",textTransform:"uppercase",marginTop:12,marginBottom:6}}>How to Make It</div>
+                                                  {rec.steps.map((step,i)=>(
+                                                    <div key={i} style={{display:"flex",gap:8,padding:"5px 0",borderBottom:`1px solid ${T.b1}22`}}>
+                                                      <span style={{fontSize:10,color:T.cNour,fontWeight:"bold",flexShrink:0,minWidth:16}}>{i+1}.</span>
+                                                      <span style={{fontSize:12,color:T.t2,lineHeight:1.6}}>{step}</span>
+                                                    </div>
+                                                  ))}
+                                                </>
+                                              )}
+                                            </div>
+                                          )}
+                                          {!blocked&&!rec&&(
+                                            <div style={{borderTop:`1px solid ${T.b1}`,padding:"8px 11px"}}>
+                                              <div style={{fontSize:10,color:T.t3,fontStyle:"italic"}}>Leftover — no ingredient list needed</div>
+                                            </div>
+                                          )}
                                         </div>
                                       );
                                     })}
@@ -1145,21 +2203,56 @@ export default function App() {
 
                   {nourTab==="cart"&&(
                     <>
-                      <div style={{fontSize:8.5,color:T.t3,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:10}}>{Object.keys(cart).length} items · {Object.values(cart).filter(v=>v.checked).length} checked · Shared household list</div>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                        <div style={{fontSize:8.5,color:T.t3,letterSpacing:"0.1em",textTransform:"uppercase"}}>{Object.keys(cart).length} items · {Object.values(cart).filter(v=>v.checked).length} checked</div>
+                        {Object.values(cart).some(v=>v.checked)&&(
+                          <button onClick={()=>setCart(prev=>{const n={};Object.entries(prev).forEach(([k,v])=>{if(!v.checked)n[k]=v;});return n;})} style={{padding:"3px 8px",background:"transparent",border:`1px solid ${T.b1}`,borderRadius:3,color:T.t3,fontSize:8,cursor:"pointer",letterSpacing:"0.06em",textTransform:"uppercase"}}>Clear Checked</button>
+                        )}
+                      </div>
                       {Object.keys(cart).length===0?(
                         <div style={{background:T.s1,border:`1px solid ${T.b1}`,borderRadius:8,padding:"24px",textAlign:"center"}}>
-                          <div style={{fontSize:13,color:T.cNour,marginBottom:6}}>Open the 4-Week Plan and tap a meal</div>
-                          <div style={{fontSize:11,color:T.t3}}>Tap "+ Add Ingredients to Cart" on any meal</div>
+                          <div style={{fontSize:13,color:T.cNour,marginBottom:6}}>Open the 4-Week Plan</div>
+                          <div style={{fontSize:11,color:T.t3}}>Each ingredient has its own + Cart button</div>
                         </div>
                       ):(
-                        Object.entries(cart).map(([k,v])=>(
-                          <div key={k} onClick={()=>setCart(p=>({...p,[k]:{...p[k],checked:!p[k].checked}}))} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.b1}`,cursor:"pointer"}}>
-                            <div style={{width:18,height:18,border:`1px solid ${v.checked?T.teal:T.b2}`,borderRadius:3,background:v.checked?T.tealBg:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                              {v.checked&&<Svg path={IC.check} size={10} color={T.teal} sw={2.5}/>}
+                        <>
+                          {["produce","protein","dairy","grains","pantry","spice","beverage"].map(cat=>{
+                            const items=Object.entries(cart).filter(([,v])=>v.unit===cat&&!v.checked);
+                            if(items.length===0)return null;
+                            const catLabel={produce:"Produce",protein:"Proteins",dairy:"Dairy & Eggs",grains:"Grains & Legumes",pantry:"Pantry",spice:"Herbs & Spices",beverage:"Beverages"}[cat];
+                            const catColor={produce:"#5a9a5a",protein:"#c04040",dairy:"#4a80c0",grains:"#a07840",pantry:"#c0a040",spice:"#808040",beverage:"#4a8088"}[cat];
+                            return (
+                              <div key={cat} style={{marginBottom:12}}>
+                                <div style={{fontSize:8,color:catColor,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:5,display:"flex",alignItems:"center",gap:5}}>
+                                  <span style={{width:6,height:6,borderRadius:"50%",background:catColor,flexShrink:0,display:"inline-block"}}/>
+                                  {catLabel} ({items.length})
+                                </div>
+                                {items.map(([k,v])=>(
+                                  <div key={k} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 0",borderBottom:`1px solid ${T.b1}`}}>
+                                    <div onClick={()=>setCart(p=>({...p,[k]:{...p[k],checked:true}}))} style={{width:18,height:18,border:`1px solid ${T.b2}`,borderRadius:3,background:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}/>
+                                    <span style={{flex:1,fontSize:12,color:T.t2}}>{v.name}</span>
+                                    <span style={{fontSize:9.5,color:T.t3,marginRight:2}}>{v.count>1?`×${v.count}`:v.amt}</span>
+                                    <button onClick={()=>removeCartItem(k)} style={{background:"transparent",border:"none",color:T.t3,fontSize:15,cursor:"pointer",padding:"0 2px",lineHeight:1,flexShrink:0}}>×</button>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                          {Object.entries(cart).filter(([,v])=>v.checked).length>0&&(
+                            <div style={{marginTop:6,opacity:0.45}}>
+                              <div style={{fontSize:8,color:T.t3,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>In basket</div>
+                              {Object.entries(cart).filter(([,v])=>v.checked).map(([k,v])=>(
+                                <div key={k} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:`1px solid ${T.b1}`}}>
+                                  <div onClick={()=>setCart(p=>({...p,[k]:{...p[k],checked:false}}))} style={{width:18,height:18,border:`1px solid ${T.teal}`,borderRadius:3,background:T.tealBg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,cursor:"pointer"}}>
+                                    <Svg path={IC.check} size={10} color={T.teal} sw={2.5}/>
+                                  </div>
+                                  <span style={{flex:1,fontSize:12,color:T.t3,textDecoration:"line-through"}}>{v.name}</span>
+                                  <button onClick={()=>removeCartItem(k)} style={{background:"transparent",border:"none",color:T.t3,fontSize:15,cursor:"pointer",padding:"0 2px",lineHeight:1}}>×</button>
+                                </div>
+                              ))}
                             </div>
-                            <span style={{flex:1,fontSize:13,color:v.checked?T.t3:T.t2,textDecoration:v.checked?"line-through":"none"}}>{v.name}</span>
-                          </div>
-                        ))
+                          )}
+                        </>
                       )}
                     </>
                   )}
@@ -1203,7 +2296,7 @@ export default function App() {
                 {l:`${T.partnerName}'s Mood`,s:"Translated · partner feed",action:()=>{setShowMood(true);setMoodTab("partner");}},
                 {l:"Dietary Settings",s:`NF: ${diet.nutAllergy?"ON ⚠":"off"} · GBP: ${diet.gbp?"on":"off"} · MTHFR: ${diet.mthfr?"on":"off"}`,action:()=>setNourTab("settings")},
                 {l:"Alarms",s:"Manage · snooze · are-you-awake",action:()=>setShowAlarm(true)},
-                {l:"Settings",s:"Profile · household · targets"},
+                {l:"Settings",s:"Profile · household · targets · reset tutorial"},
               ].map((it,i)=>(
                 <div key={i} onClick={it.action?()=>{it.action();if(it.l==="Dietary Settings")goNav("nourish");}:undefined} style={{background:T.s1,border:`1px solid ${T.b1}`,borderRadius:8,padding:"11px 13px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:it.action?"pointer":"default"}}>
                   <div><div style={{fontSize:14,color:T.text,marginBottom:2}}>{it.l}</div><div style={{fontSize:10,color:T.t3}}>{it.s}</div></div>

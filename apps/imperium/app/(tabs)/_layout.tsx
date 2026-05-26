@@ -20,6 +20,9 @@ export default function TabLayout() {
       {tabs.map((tab) => (
         <Tabs.Screen key={tab.key} name={tab.key} options={{ title: tab.label }} />
       ))}
+      <Tabs.Screen name="warrior" options={{ href: null }} />
+      <Tabs.Screen name="doctrine" options={{ href: null }} />
+      <Tabs.Screen name="two" options={{ href: null }} />
     </Tabs>
   );
 }

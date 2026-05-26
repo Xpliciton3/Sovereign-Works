@@ -1,0 +1,33 @@
+# LAYER 2 BUILD SEQUENCE — Daily Hub
+# Resume here after token limits. Do not build APK until L2.30 is [x].
+
+- [x] L2.01  Project scaffold — both apps + shared package, Layer 2 tabs, AI placeholders
+- [x] L2.02  TypeScript interfaces — packages/shared/src/types/layer2.ts
+- [x] L2.03  Color constants — packages/shared/src/colors/ (existing)
+- [x] L2.04  Firebase config + writeShared() + drainSyncQueue() — aligned to Layer 2 schema
+- [x] L2.05  SQLite schema — Layer 2 grocery + sync_queue shape in schema.ts
+- [x] L2.06  Recipe + week plan data — imported from sovereign_v9.jsx via scripts/importPrototypeData.mjs
+- [ ] L2.07  Quote fallback bank imported from MASTER docs → quotes.ts
+- [ ] L2.08  Content strings imported from MASTER_IMPERIUM.md → imperium-content.ts
+- [ ] L2.09  Content strings imported from MASTER_TENDING.md → tending-content.ts
+- [x] L2.10  useCart hook — packages/shared/src/hooks/useCart.ts
+- [ ] L2.11  useHydration hook
+- [ ] L2.12  useMood hook
+- [ ] L2.13  useSchedule hook
+- [ ] L2.14  usePlanner hook
+- [ ] L2.15  Bottom tab navigator — verify Home / Planner / Nourish / More
+- [ ] L2.16  Home tab — full layout matching sovereign_v9.jsx
+- [ ] L2.17  Planner tab — Today sub-tab only
+- [ ] L2.18  Nourish tab — Plan sub-tab
+- [ ] L2.19  Nourish tab — Grocery sub-tab
+- [ ] L2.20  Mood modal
+- [ ] L2.21  Overtime modal
+- [ ] L2.22  Body hub — hydration inline
+- [ ] L2.23  Mind hub + Soul hub — locked stubs
+- [ ] L2.24  Local AI scaffold — packages/shared/ai/
+- [ ] L2.25  Verify both apps run
+- [ ] L2.26  Verify add ingredient → grocery
+- [ ] L2.27  Verify ×2 count merge
+- [ ] L2.28  Verify dietary filter blocks
+- [ ] L2.29  Verify mood partner sync
+- [ ] L2.30  Mark complete — no APK until this is [x]
