@@ -1,5 +1,11 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { initializeApp, type FirebaseApp, getApps, getApp } from 'firebase/app';
+import {
+  getAuth,
+  initializeAuth,
+  getReactNativePersistence,
+  type Auth,
+} from 'firebase/auth';
 import { getDatabase, type Database } from 'firebase/database';
 
 export interface FirebaseConfigShape {
@@ -39,7 +45,7 @@ let auth: Auth | null = null;
 
 export function getFirebaseApp(): FirebaseApp {
   if (!app) {
-    app = initializeApp(firebaseConfig);
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   }
   return app;
 }
@@ -53,7 +59,20 @@ export function getFirebaseDb(): Database {
 
 export function getFirebaseAuth(): Auth {
   if (!auth) {
-    auth = getAuth(getFirebaseApp());
+    const app = getFirebaseApp();
+    try {
+      auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(AsyncStorage),
+      });
+    } catch (e: unknown) {
+      const code =
+        e && typeof e === 'object' && 'code' in e ? String((e as { code: string }).code) : '';
+      if (code === 'auth/already-initialized') {
+        auth = getAuth(app);
+      } else {
+        throw e;
+      }
+    }
   }
   return auth;
 }

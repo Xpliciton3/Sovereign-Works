@@ -2,13 +2,13 @@
   "expo": {
     "name": "The Imperium",
     "slug": "sovereign-imperium",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sovereign-imperium",
     "userInterfaceStyle": "automatic",
     "android": {
-      "versionCode": 3,
+      "versionCode": 4,
       "package": "com.sovereignworks.imperium",
       "adaptiveIcon": {
         "backgroundColor": "#0D0D0D",

@@ -23,7 +23,7 @@ export default function Index() {
   }
 
   if (target === 'tabs') {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(tabs)/index" />;
   }
 
   return <Redirect href="/onboarding/welcome" />;
