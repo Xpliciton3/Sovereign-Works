@@ -5,7 +5,14 @@ export const STORAGE_KEYS = {
   profile: 'profile',
   onboardingComplete: 'onboardingComplete',
   tourComplete: 'tour_v1_complete',
+  householdCreatedPending: 'householdCreatedPending',
 } as const;
+
+export type HouseholdCreatedPending = {
+  householdName: string;
+  joinCode: string;
+  householdId: string;
+};
 
 export async function getStoredHouseholdId(): Promise<string | null> {
   return AsyncStorage.getItem(STORAGE_KEYS.householdId);
@@ -22,4 +29,22 @@ export async function isOnboardingComplete(): Promise<boolean> {
 
 export async function setOnboardingComplete(): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEYS.onboardingComplete, 'true');
+}
+
+export async function setHouseholdCreatedPending(data: HouseholdCreatedPending): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.householdCreatedPending, JSON.stringify(data));
+}
+
+export async function getHouseholdCreatedPending(): Promise<HouseholdCreatedPending | null> {
+  const raw = await AsyncStorage.getItem(STORAGE_KEYS.householdCreatedPending);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as HouseholdCreatedPending;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearHouseholdCreatedPending(): Promise<void> {
+  await AsyncStorage.removeItem(STORAGE_KEYS.householdCreatedPending);
 }

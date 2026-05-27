@@ -96,11 +96,13 @@ export async function joinHouseholdByCode(
     throw new Error('CODE_NOT_FOUND');
   }
 
-  if (Date.now() > household.joinCodeExpiry) {
+  const householdData = household as HouseholdConfig;
+
+  if (Date.now() > householdData.joinCodeExpiry) {
     throw new Error('CODE_EXPIRED');
   }
 
-  if (household.members[member.profile]) {
+  if (householdData.members[member.profile]) {
     throw new Error('PROFILE_ALREADY_JOINED');
   }
 
@@ -110,7 +112,7 @@ export async function joinHouseholdByCode(
     joinedAt: now,
   });
 
-  return { householdId, householdName: household.householdName };
+  return { householdId, householdName: householdData.householdName };
 }
 
 export async function regenerateJoinCode(householdId: string): Promise<{

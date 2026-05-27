@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { ONBOARDING } from '@/lib/routes';
 import { SovereignScreen, useSovereignTheme } from '@/components/SovereignScreen';
 import { SigilMark } from '@/components/SigilMark';
 import { PrimaryButton } from '@/components/LockScreen';
@@ -16,8 +17,8 @@ export default function WelcomeScreen() {
         {profileConfig.practitionerTitle} Operating System
       </Text>
       <View style={styles.actions}>
-        <PrimaryButton label="Join Existing Household" onPress={() => router.push('/onboarding/join-household')} />
-        <PrimaryButton label="Create New Household" onPress={() => router.push('/onboarding/create-household')} />
+        <PrimaryButton label="Join Existing Household" onPress={() => router.push(ONBOARDING.joinHousehold)} />
+        <PrimaryButton label="Create New Household" onPress={() => router.push(ONBOARDING.createHousehold)} />
       </View>
     </SovereignScreen>
   );

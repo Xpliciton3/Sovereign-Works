@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
-import { createHousehold, isFirebaseConfigured } from '@sovereign/shared';
+import { createHousehold, HouseholdCreatedPanel, isFirebaseConfigured } from '@sovereign/shared';
 import { SovereignScreen, useSovereignTheme } from '@/components/SovereignScreen';
 import { PrimaryButton } from '@/components/LockScreen';
-import { PROFILE, profileConfig } from '@/constants/profile';
-import { setStoredHouseholdId } from '@/lib/storage';
+import { PROFILE, profileConfig, TENDING_APK_URL } from '@/constants/profile';
+import { goToPlannerTab } from '@/lib/routes';
+import { setOnboardingComplete, setStoredHouseholdId } from '@/lib/storage';
+import type { HouseholdCreatedPending } from '@/lib/storage';
 
 export default function CreateHouseholdScreen() {
   const colors = useSovereignTheme();
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [created, setCreated] = useState<HouseholdCreatedPending | null>(null);
 
   async function handleCreate() {
     if (!name.trim()) {
@@ -33,19 +35,38 @@ export default function CreateHouseholdScreen() {
         personName: profileConfig.personName,
       });
       await setStoredHouseholdId(result.householdId);
-      router.replace({
-        pathname: '/onboarding/household-created',
-        params: {
-          householdName: name.trim(),
-          joinCode: result.joinCodeFormatted,
-          householdId: result.householdId,
-        },
+      setCreated({
+        householdName: name.trim(),
+        joinCode: result.joinCodeFormatted,
+        householdId: result.householdId,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not create household.');
     } finally {
       setLoading(false);
     }
+  }
+
+  async function continueSolo() {
+    await setOnboardingComplete();
+    goToPlannerTab();
+  }
+
+  if (created) {
+    return (
+      <SovereignScreen style={styles.container}>
+        <HouseholdCreatedPanel
+          colors={colors}
+          payload={created}
+          partnerProfile="tending"
+          partnerDisplayName={profileConfig.partnerName}
+          partnerApkUrl={TENDING_APK_URL}
+          onContinueSolo={continueSolo}
+          renderButton={({ label, onPress }) => <PrimaryButton label={label} onPress={onPress} />}
+          renderScreen={(children) => <View style={styles.successInner}>{children}</View>}
+        />
+      </SovereignScreen>
+    );
   }
 
   return (
@@ -83,6 +104,9 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
     gap: 16,
+  },
+  successInner: {
+    gap: 12,
   },
   heading: {
     fontSize: 18,

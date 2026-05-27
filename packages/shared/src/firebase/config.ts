@@ -19,13 +19,13 @@ export interface FirebaseConfigShape {
 }
 
 const FIREBASE_DEFAULTS: FirebaseConfigShape = {
-  apiKey: 'AIzaSyCXGh5c65iDyoPKw8mI4qMrhuVW6pWBJkc',
+  apiKey: 'AIzaSyAgrCx_F9AnB35EeVQcPy5AGE-ed0xbT3A',
   authDomain: 'sovereign-works-v4.firebaseapp.com',
   databaseURL: 'https://sovereign-works-v4-default-rtdb.firebaseio.com',
   projectId: 'sovereign-works-v4',
   storageBucket: 'sovereign-works-v4.firebasestorage.app',
   messagingSenderId: '448966886183',
-  appId: '1:448966886183:web:ee2eca0896ab3198071f02',
+  appId: '1:448966886183:android:302a6967f405d693071f02',
 };
 
 export const firebaseConfig: FirebaseConfigShape = {
@@ -33,7 +33,8 @@ export const firebaseConfig: FirebaseConfigShape = {
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || FIREBASE_DEFAULTS.authDomain,
   databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL || FIREBASE_DEFAULTS.databaseURL,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || FIREBASE_DEFAULTS.projectId,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || FIREBASE_DEFAULTS.storageBucket,
+  storageBucket:
+    process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || FIREBASE_DEFAULTS.storageBucket,
   messagingSenderId:
     process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || FIREBASE_DEFAULTS.messagingSenderId,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || FIREBASE_DEFAULTS.appId,
@@ -59,16 +60,16 @@ export function getFirebaseDb(): Database {
 
 export function getFirebaseAuth(): Auth {
   if (!auth) {
-    const app = getFirebaseApp();
+    const firebaseApp = getFirebaseApp();
     try {
-      auth = initializeAuth(app, {
+      auth = initializeAuth(firebaseApp, {
         persistence: getReactNativePersistence(AsyncStorage),
       });
     } catch (e: unknown) {
       const code =
         e && typeof e === 'object' && 'code' in e ? String((e as { code: string }).code) : '';
       if (code === 'auth/already-initialized') {
-        auth = getAuth(app);
+        auth = getAuth(firebaseApp);
       } else {
         throw e;
       }

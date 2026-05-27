@@ -6,6 +6,7 @@ import { SovereignScreen, useSovereignTheme } from '@/components/SovereignScreen
 import { PrimaryButton } from '@/components/LockScreen';
 import { PROFILE, profileConfig } from '@/constants/profile';
 import { setOnboardingComplete, setStoredHouseholdId } from '@/lib/storage';
+import { goToPlannerTab } from '@/lib/routes';
 
 export default function JoinHouseholdScreen() {
   const colors = useSovereignTheme();
@@ -34,7 +35,7 @@ export default function JoinHouseholdScreen() {
       });
       await setStoredHouseholdId(result.householdId);
       await setOnboardingComplete();
-      router.replace('/(tabs)/planner');
+      goToPlannerTab();
     } catch (e) {
       if (e instanceof Error) {
         if (e.message === 'CODE_NOT_FOUND') {

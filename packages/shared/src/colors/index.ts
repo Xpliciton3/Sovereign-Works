@@ -57,7 +57,11 @@ export const TENDING_COLORS = {
 } as const;
 
 export type ColorScheme = 'dark' | 'light';
-export type ThemeColors = typeof IMPERIUM_COLORS.dark;
+export type ThemeColors =
+  | (typeof IMPERIUM_COLORS)['dark']
+  | (typeof IMPERIUM_COLORS)['light']
+  | (typeof TENDING_COLORS)['dark']
+  | (typeof TENDING_COLORS)['light'];
 
 export function getThemeColors(
   profile: 'imperium' | 'tending',

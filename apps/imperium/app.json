@@ -2,13 +2,13 @@
   "expo": {
     "name": "The Imperium",
     "slug": "sovereign-imperium",
-    "version": "1.0.3",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sovereign-imperium",
     "userInterfaceStyle": "automatic",
     "android": {
-      "versionCode": 4,
+      "versionCode": 8,
       "package": "com.sovereignworks.imperium",
       "adaptiveIcon": {
         "backgroundColor": "#0D0D0D",
@@ -28,8 +28,6 @@
       "expo-sqlite",
       "expo-secure-store"
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "newArchEnabled": false
   }
 }

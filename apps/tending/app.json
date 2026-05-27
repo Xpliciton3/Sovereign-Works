@@ -2,13 +2,13 @@
   "expo": {
     "name": "The Tending",
     "slug": "sovereign-tending",
-    "version": "1.0.3",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sovereign-tending",
     "userInterfaceStyle": "automatic",
     "android": {
-      "versionCode": 4,
+      "versionCode": 7,
       "package": "com.sovereignworks.tending",
       "adaptiveIcon": {
         "backgroundColor": "#120A0E",
@@ -28,8 +28,6 @@
       "expo-sqlite",
       "expo-secure-store"
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "newArchEnabled": false
   }
 }
