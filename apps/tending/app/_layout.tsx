@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -14,7 +15,10 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (error) throw error;
+    if (error) {
+      console.warn('Font load failed, continuing with system fonts:', error);
+      SplashScreen.hideAsync();
+    }
   }, [error]);
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
+  if (!loaded && !error) {
     return null;
   }
 

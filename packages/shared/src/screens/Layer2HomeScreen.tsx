@@ -100,13 +100,15 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
         <Text style={[styles.axiom, { color: colors.accent }]}>{pc.axiom}</Text>
       </ScrollView>
 
-      <MoodModal
-        visible={showMood}
-        onClose={() => setShowMood(false)}
-        profile={profile}
-        colors={colors}
-        householdId={householdId}
-      />
+      {showMood && (
+        <MoodModal
+          visible={showMood}
+          onClose={() => setShowMood(false)}
+          profile={profile}
+          colors={colors}
+          householdId={householdId}
+        />
+      )}
     </>
   );
 }
