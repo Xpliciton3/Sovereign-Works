@@ -51,6 +51,31 @@ class SovereignAlarmModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  fun canScheduleExactAlarms(promise: Promise) {
+    try {
+      val ctx = reactApplicationContext.applicationContext
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val am = ctx.getSystemService(AlarmManager::class.java)
+        promise.resolve(am.canScheduleExactAlarms())
+      } else {
+        promise.resolve(true)
+      }
+    } catch (e: Exception) {
+      promise.reject("ALARM_CHECK_ERROR", e)
+    }
+  }
+
+  @ReactMethod
+  fun canDrawOverlays(promise: Promise) {
+    try {
+      val ctx = reactApplicationContext.applicationContext
+      promise.resolve(Settings.canDrawOverlays(ctx))
+    } catch (e: Exception) {
+      promise.reject("OVERLAY_CHECK_ERROR", e)
+    }
+  }
+
+  @ReactMethod
   fun requestOverlayPermission(promise: Promise) {
     try {
       val activity = reactApplicationContext.currentActivity ?: run {

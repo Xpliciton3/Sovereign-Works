@@ -9,19 +9,14 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-
+import { useAppVersionTourReset } from '@sovereign/shared';
 
 export { ErrorBoundary } from 'expo-router';
 
-
-
 SplashScreen.preventAutoHideAsync();
 
-
-
 export default function RootLayout() {
-
+  useAppVersionTourReset();
   const [loaded, error] = useFonts({
 
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),

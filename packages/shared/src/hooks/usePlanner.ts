@@ -4,6 +4,7 @@ import type { Profile } from '../types';
 import { getTodayPlanDay } from '../utils/todayPlan';
 import type { SleepWindow } from '../utils/sleepWindow';
 import type { ShiftType } from './useSchedule';
+import type { DailySchedule } from '../ai/groqShiftPlanner';
 import {
   IMPERIUM_DECLARATION,
   IMPERIUM_DECLARATION_INSTRUCTION,
@@ -41,15 +42,29 @@ export function buildPlannerItems(
   colors: { gold: string; cNour: string; cMind: string; cBody: string; cSoul: string },
   sleepWindow: SleepWindow | null,
   shiftType: ShiftType = 'day',
-  isWorkDay = true
+  isWorkDay = true,
+  schedule?: DailySchedule | null
 ): PlannerItem[] {
   const day = getTodayPlanDay();
   const imp = profile === 'imperium';
+  const timeFromSchedule = (id: string, fallback: string): string => {
+    const hit = schedule?.scheduledItems.find((i) => i.id === id);
+    return hit?.time ?? fallback;
+  };
   const baseTimes = shiftType === 'night'
     ? { decl: '3:30 PM', b: '4:00 PM', hyd: '3:35 PM', l: '8:30 PM', mid: '5:30 PM', d: '4:30 AM', inv: '6:30 AM' }
     : { decl: 'Before all else', b: '8:00 AM', hyd: '9:00 AM', l: '12:30 PM', mid: '2:00 PM', d: '6:00 PM', inv: '9:00 PM' };
   const offTimes = { decl: '7:00 AM', b: '7:30 AM', hyd: '8:00 AM', l: '12:00 PM', mid: '3:00 PM', d: '7:00 PM', inv: '9:30 PM' };
-  const t = isWorkDay ? baseTimes : offTimes;
+  const raw = isWorkDay ? baseTimes : offTimes;
+  const t = {
+    decl: timeFromSchedule('decl', raw.decl),
+    b: timeFromSchedule('b', raw.b),
+    hyd: timeFromSchedule('hyd', raw.hyd),
+    l: timeFromSchedule('l', raw.l),
+    mid: timeFromSchedule('mid', raw.mid),
+    d: timeFromSchedule('d', raw.d),
+    inv: timeFromSchedule('inv', raw.inv),
+  };
   const items: PlannerItem[] = imp
     ? [
         {

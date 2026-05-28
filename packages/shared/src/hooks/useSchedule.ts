@@ -103,15 +103,16 @@ export function useSchedule() {
   const shiftEnd = state.shiftType === 'day' ? '18:00' : '06:00';
   const otActive = state.overtimeHours > 0 && state.overtimeDate === todayIso;
   const baseSleep = calcSleepWindow(state.shiftType, isWorkDay);
+  const shiftHours = otActive ? state.overtimeHours : 0;
   const sleepWindow = {
     ...baseSleep,
-    wake: otActive ? addHours12(baseSleep.wake, state.overtimeHours) : baseSleep.wake,
+    wake: shiftHours ? addHours12(baseSleep.wake, shiftHours) : baseSleep.wake,
+    sleep: shiftHours ? addHours12(baseSleep.sleep, shiftHours) : baseSleep.sleep,
+    windDown: shiftHours ? addHours12(baseSleep.windDown, shiftHours) : baseSleep.windDown,
   };
   const shiftLabel = !isWorkDay
     ? 'OFF TODAY'
-    : state.shiftType === 'day'
-      ? 'DAY SHIFT 6A–6P'
-      : 'NIGHT SHIFT 6P–6A';
+    : `${state.shiftType === 'day' ? 'DAY' : 'NIGHT'} SHIFT · Active ${state.shiftType === 'day' ? '04:30–22:00' : '15:30–07:00'}`;
 
   const setShiftType = useCallback(async (shiftType: ShiftType) => {
     await save({ ...state, shiftType });

@@ -5,6 +5,8 @@ type SovereignAlarmNative = {
   rescheduleAlarms?: (json: string) => Promise<void>;
   requestExactAlarmPermission?: () => Promise<void>;
   requestOverlayPermission?: () => Promise<void>;
+  canScheduleExactAlarms?: () => Promise<boolean>;
+  canDrawOverlays?: () => Promise<boolean>;
 };
 
 const Native = NativeModules.SovereignAlarmModule as SovereignAlarmNative | undefined;
@@ -37,5 +39,25 @@ export async function requestOverlayPermission(): Promise<void> {
     await Native.requestOverlayPermission();
   } catch {
     // fall through
+  }
+}
+
+export async function canScheduleExactAlarms(): Promise<boolean> {
+  if (Platform.OS !== 'android') return true;
+  if (!Native?.canScheduleExactAlarms) return true;
+  try {
+    return await Native.canScheduleExactAlarms();
+  } catch {
+    return false;
+  }
+}
+
+export async function canDrawOverlays(): Promise<boolean> {
+  if (Platform.OS !== 'android') return true;
+  if (!Native?.canDrawOverlays) return true;
+  try {
+    return await Native.canDrawOverlays();
+  } catch {
+    return false;
   }
 }

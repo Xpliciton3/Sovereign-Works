@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RECIPES } from '../data/recipes';
+import { getEnrichedRecipe } from '../data/recipeAlternatives';
 import type { DietarySettingsL2, IngredientL2 } from '../types/layer2';
 import type { ThemeColors } from '../colors';
 
@@ -22,7 +23,7 @@ const NUT_SWAPS: Array<[RegExp, string]> = [
 ];
 
 export function MealIngredients({ mealName, colors, accent, diet, onAddIngredient, onAddAll }: Props) {
-  const rec = RECIPES[mealName];
+  const rec = getEnrichedRecipe(mealName, RECIPES);
   if (!rec) {
     return (
       <Text style={[styles.missing, { color: colors.textMuted }]}>

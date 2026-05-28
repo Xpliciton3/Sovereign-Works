@@ -57,18 +57,17 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
         <View style={styles.hubRow}>
           {(
             [
-              ['mind', 'Mind', '#9060f0', 'Day 7'],
-              ['body', 'Body', '#18c48a', null],
-              ['soul', 'Soul', colors.accent, 'Day 14'],
+              ['mind', 'Mind', '#9060f0'],
+              ['body', 'Body', '#18c48a'],
+              ['soul', 'Soul', colors.accent],
             ] as const
-          ).map(([key, label, col, lock]) => (
+          ).map(([key, label, col]) => (
             <Pressable
               key={key}
-              onPress={() => (key === 'body' ? setHub('body') : setHub(key))}
+              onPress={() => setHub(hub === key ? null : key)}
               style={[styles.hubTile, { borderColor: colors.border, backgroundColor: colors.surface }]}
             >
               <Text style={{ color: col, fontSize: 12, letterSpacing: 1 }}>{label}</Text>
-              {lock && <Text style={{ color: colors.textDisabled, fontSize: 9 }}>{lock}</Text>}
             </Pressable>
           ))}
         </View>
@@ -98,7 +97,9 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
           <Text style={[styles.locked, { color: colors.textMuted }]}>Mind hub content is in active build.</Text>
         )}
         {hub === 'soul' && (
-          <Text style={[styles.locked, { color: colors.textMuted }]}>Soul hub content is in active build.</Text>
+          <Text style={[styles.locked, { color: colors.textMuted }]}>
+            Holy Days, rites, and partnership — open More → Holy Days for observances.
+          </Text>
         )}
 
         <Pressable onPress={() => setShowMood(true)} style={[styles.moodBtn, { borderColor: '#9060f055' }]}>

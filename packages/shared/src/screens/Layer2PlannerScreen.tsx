@@ -5,10 +5,12 @@ import type { ThemeColors } from '../colors';
 import { getProfileConfig } from '../profiles';
 import { buildPlannerItems, usePlanner } from '../hooks/usePlanner';
 import { useSchedule } from '../hooks/useSchedule';
+import { useShiftPlanner } from '../hooks/useShiftPlanner';
 import { MealIngredients } from './MealIngredients';
 import { AlarmManagementScreen } from './AlarmManagementScreen';
 import { useCart } from '../hooks/useCart';
 import { RECIPES } from '../data/recipes';
+import { holyDayOnDate } from '../data/holyDays';
 import { useDietary } from '../hooks/useDietary';
 
 const PALETTE = {
@@ -36,11 +38,12 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
     anchorDate,
     setAnchorDate,
   } = useSchedule();
+  const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
   const { done, toggleDone } = usePlanner(profile);
   const { addIngredient, addAllIngredients } = useCart();
   const { diet } = useDietary();
   const p = PALETTE[profile];
-  const items = buildPlannerItems(profile, p, sleepWindow, shiftType, isWorkDay);
+  const items = buildPlannerItems(profile, p, sleepWindow, shiftType, isWorkDay, schedule);
   const doneCount = items.filter((it) => done[it.id]).length;
   const pc = getProfileConfig(profile);
 
@@ -57,7 +60,9 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
       </View>
       <View style={[styles.shiftStrip, { borderColor: colors.border, backgroundColor: colors.surface }]}>
         <Text style={[styles.shiftText, { color: colors.textMuted }]}>
-          {shiftLabel}{overtimeHours > 0 ? ` · OT +${overtimeHours}h` : ''}
+          {shiftLabel}
+          {overtimeHours > 0 ? ` · OT +${overtimeHours}h` : ''}
+          {schedule ? ` · Active ${schedule.activeWindowStart}–${schedule.activeWindowEnd}` : ''}
         </Text>
       </View>
       {sleepWindow && (
@@ -133,13 +138,34 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
         })}
       {planTab === 'calendar' && (
         <View style={[styles.stubCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-          <Text style={{ color: colors.text }}>Calendar view lands in Layer 6.</Text>
+          {(() => {
+            const holy = holyDayOnDate(new Date().toISOString().slice(0, 10));
+            if (holy) {
+              return (
+                <>
+                  <Text style={{ color: colors.accent, fontSize: 14 }}>{holy.calendarSymbol} {holy.title}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6 }}>{holy.placement_meaning}</Text>
+                </>
+              );
+            }
+            return <Text style={{ color: colors.text }}>Calendar grid expands in Layer 6. Holy days appear as events.</Text>;
+          })()}
         </View>
       )}
       {planTab === 'alarms' && <AlarmManagementScreen profile={profile} colors={colors} />}
       {planTab === 'reminders' && (
         <View style={[styles.stubCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-          <Text style={{ color: colors.text }}>Reminders UI is queued for Layer 3.</Text>
+          <Text style={{ color: colors.text, marginBottom: 6 }}>Hydration reminders</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+            {schedule?.hydrationReminders?.length
+              ? schedule.hydrationReminders.join(' · ')
+              : 'Synced when Groq planner runs — see Alarms tab.'}
+          </Text>
+          {schedule?.groqNote && (
+            <Text style={{ color: colors.textDisabled, fontSize: 11, marginTop: 8, fontStyle: 'italic' }}>
+              {schedule.groqNote}
+            </Text>
+          )}
         </View>
       )}
       {planTab === 'schedule' && (

@@ -5,4 +5,6 @@ export { Layer2MoreScreen } from './Layer2MoreScreen';
 export { MoodModal } from './MoodModal';
 export { AlarmManagementScreen } from './AlarmManagementScreen';
 export { AreYouAwakeModal } from './AreYouAwakeModal';
+export { AlarmPermissionsGate } from './AlarmPermissionsGate';
+export { HolyDaysScreen } from './HolyDaysScreen';
 export { HouseholdCreatedPanel, type HouseholdCreatedPayload } from './HouseholdCreatedPanel';

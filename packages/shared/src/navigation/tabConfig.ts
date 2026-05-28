@@ -4,15 +4,15 @@ import type { TabConfigItem } from '../types';
 export const TAB_CONFIG: Record<'imperium' | 'tending', TabConfigItem[]> = {
   imperium: [
     { key: 'index', label: 'Home', icon: 'home', locked: false },
-    { key: 'planner', label: 'Planner', icon: 'calendar', locked: false },
+    { key: 'planner', label: 'Planner', icon: 'plan', locked: false },
     { key: 'nourish', label: 'Nourish', icon: 'leaf', locked: false },
-    { key: 'more', label: 'More', icon: 'menu', locked: false },
+    { key: 'more', label: 'More', icon: 'more', locked: false },
   ],
   tending: [
     { key: 'index', label: 'Home', icon: 'home', locked: false },
-    { key: 'planner', label: 'Planner', icon: 'calendar', locked: false },
+    { key: 'planner', label: 'Planner', icon: 'plan', locked: false },
     { key: 'nourish', label: 'Nourish', icon: 'leaf', locked: false },
-    { key: 'more', label: 'More', icon: 'menu', locked: false },
+    { key: 'more', label: 'More', icon: 'more', locked: false },
   ],
 };
 
