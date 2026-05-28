@@ -4,6 +4,7 @@ import type { SovereignAlarm } from './types';
 type SovereignAlarmNative = {
   rescheduleAlarms?: (json: string) => Promise<void>;
   requestExactAlarmPermission?: () => Promise<void>;
+  requestOverlayPermission?: () => Promise<void>;
 };
 
 const Native = NativeModules.SovereignAlarmModule as SovereignAlarmNative | undefined;
@@ -24,6 +25,16 @@ export async function requestExactAlarmPermission(): Promise<void> {
   if (!Native?.requestExactAlarmPermission) return;
   try {
     await Native.requestExactAlarmPermission();
+  } catch {
+    // fall through
+  }
+}
+
+export async function requestOverlayPermission(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  if (!Native?.requestOverlayPermission) return;
+  try {
+    await Native.requestOverlayPermission();
   } catch {
     // fall through
   }

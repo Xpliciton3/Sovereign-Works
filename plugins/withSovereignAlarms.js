@@ -1,5 +1,9 @@
+const fs = require('fs');
+const path = require('path');
 const {
   withAndroidManifest,
+  withMainApplication,
+  withDangerousMod,
   AndroidConfig,
 } = require('@expo/config-plugins');
 
@@ -15,8 +19,30 @@ const PERMS = [
   'android.permission.FOREGROUND_SERVICE',
 ];
 
+const ALARM_PKG = 'com.sovereignworks.alarms';
+const SRC_ROOT = path.join(__dirname, 'sovereign-alarms', 'android', 'com', 'sovereignworks', 'alarms');
+
+function copyAlarmSources(projectRoot) {
+  const destRoot = path.join(
+    projectRoot,
+    'android',
+    'app',
+    'src',
+    'main',
+    'java',
+    'com',
+    'sovereignworks',
+    'alarms',
+  );
+  fs.mkdirSync(destRoot, { recursive: true });
+  for (const file of fs.readdirSync(SRC_ROOT)) {
+    if (!file.endsWith('.kt')) continue;
+    fs.copyFileSync(path.join(SRC_ROOT, file), path.join(destRoot, file));
+  }
+}
+
 function withSovereignAlarms(config) {
-  return withAndroidManifest(config, (cfg) => {
+  config = withAndroidManifest(config, (cfg) => {
     const manifest = cfg.modResults;
     const app = AndroidConfig.Manifest.getMainApplicationOrThrow(manifest);
 
@@ -25,11 +51,11 @@ function withSovereignAlarms(config) {
     }
 
     if (!app.receiver) app.receiver = [];
-    const hasReceiver = app.receiver.some((r) => r.$?.['android:name'] === '.AlarmReceiver');
-    if (!hasReceiver) {
+    const receiverName = `${ALARM_PKG}.AlarmReceiver`;
+    if (!app.receiver.some((r) => r.$?.['android:name'] === receiverName)) {
       app.receiver.push({
         $: {
-          'android:name': '.AlarmReceiver',
+          'android:name': receiverName,
           'android:exported': 'true',
           'android:enabled': 'true',
         },
@@ -38,6 +64,7 @@ function withSovereignAlarms(config) {
             action: [
               { $: { 'android:name': 'android.intent.action.BOOT_COMPLETED' } },
               { $: { 'android:name': 'android.intent.action.LOCKED_BOOT_COMPLETED' } },
+              { $: { 'android:name': `${ALARM_PKG}.FIRE` } },
             ],
           },
         ],
@@ -45,22 +72,51 @@ function withSovereignAlarms(config) {
     }
 
     if (!app.activity) app.activity = [];
-    const hasActivity = app.activity.some((a) => a.$?.['android:name'] === '.AlarmActivity');
-    if (!hasActivity) {
+    const activityName = `${ALARM_PKG}.AlarmActivity`;
+    if (!app.activity.some((a) => a.$?.['android:name'] === activityName)) {
       app.activity.push({
         $: {
-          'android:name': '.AlarmActivity',
+          'android:name': activityName,
           'android:launchMode': 'singleInstance',
           'android:showWhenLocked': 'true',
           'android:turnScreenOn': 'true',
           'android:excludeFromRecents': 'true',
           'android:exported': 'false',
+          'android:theme': '@android:style/Theme.Black.NoTitleBar.Fullscreen',
         },
       });
     }
 
     return cfg;
   });
+
+  config = withMainApplication(config, (cfg) => {
+    let contents = cfg.modResults.contents;
+    if (!contents.includes('import com.sovereignworks.alarms.SovereignAlarmPackage')) {
+      contents = contents.replace(
+        'import com.facebook.react.ReactApplication',
+        'import com.facebook.react.ReactApplication\nimport com.sovereignworks.alarms.SovereignAlarmPackage',
+      );
+    }
+    if (!contents.includes('SovereignAlarmPackage()')) {
+      contents = contents.replace(
+        'PackageList(this).packages.apply {',
+        'PackageList(this).packages.apply {\n          add(SovereignAlarmPackage())',
+      );
+    }
+    cfg.modResults.contents = contents;
+    return cfg;
+  });
+
+  config = withDangerousMod(config, [
+    'android',
+    async (cfg) => {
+      copyAlarmSources(cfg.modRequest.projectRoot);
+      return cfg;
+    },
+  ]);
+
+  return config;
 }
 
 module.exports = withSovereignAlarms;

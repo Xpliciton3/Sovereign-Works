@@ -52,6 +52,17 @@ CREATE TABLE IF NOT EXISTS planner_schedule (
   source TEXT DEFAULT 'groq'
 );
 
+CREATE TABLE IF NOT EXISTS alarm_log (
+  id TEXT PRIMARY KEY,
+  alarm_id TEXT NOT NULL,
+  alarm_type TEXT NOT NULL,
+  scheduled_time INTEGER NOT NULL,
+  fired_at INTEGER,
+  dismissed_at INTEGER,
+  dismissed_type TEXT,
+  snooze_count INTEGER DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS alarm_configs (
   id TEXT PRIMARY KEY,
   hour INTEGER NOT NULL,

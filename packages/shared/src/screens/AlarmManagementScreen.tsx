@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Profile } from '../types';
 import type { ThemeColors } from '../colors';
 import { useAlarms } from '../alarms/useAlarms';
 import { useSchedule } from '../hooks/useSchedule';
 import { formatClock12 } from '../alarms/timeParse';
-import { requestExactAlarmPermission } from '../alarms/nativeBridge';
+import { requestAlarmPermissions, openAppSettings } from '../alarms/permissions';
 
 type Props = {
   profile: Profile;
@@ -26,18 +26,20 @@ export function AlarmManagementScreen({ profile, colors }: Props) {
     <ScrollView style={[styles.root, { backgroundColor: colors.background }]} contentContainerStyle={styles.pad}>
       <Text style={[styles.title, { color: colors.accent }]}>Alarms</Text>
       <Text style={[styles.note, { color: colors.textMuted }]}>
-        Layer 3 native full-screen alarms. Grant exact-alarm permission for wake times to fire on lock screen.
+        Native full-screen alarms fire over the lock screen. Grant all three permissions before scheduling.
       </Text>
       {Platform.OS === 'android' && (
-        <Pressable
-          onPress={async () => {
-            await requestExactAlarmPermission();
-            await Linking.openSettings();
-          }}
-          style={[styles.permBtn, { borderColor: colors.accent }]}
-        >
-          <Text style={{ color: colors.accent, fontSize: 11, letterSpacing: 1 }}>GRANT EXACT ALARM PERMISSION</Text>
-        </Pressable>
+        <>
+          <Pressable
+            onPress={() => requestAlarmPermissions()}
+            style={[styles.permBtn, { borderColor: colors.accent }]}
+          >
+            <Text style={{ color: colors.accent, fontSize: 11, letterSpacing: 1 }}>ENABLE ALARM PERMISSIONS</Text>
+          </Pressable>
+          <Pressable onPress={() => openAppSettings()} style={[styles.permBtn, { borderColor: colors.border }]}>
+            <Text style={{ color: colors.textMuted, fontSize: 11, letterSpacing: 1 }}>OPEN SYSTEM SETTINGS</Text>
+          </Pressable>
+        </>
       )}
       {alarms.map((alarm) => (
         <View key={alarm.id} style={[styles.row, { borderColor: colors.border, backgroundColor: colors.surface }]}>
