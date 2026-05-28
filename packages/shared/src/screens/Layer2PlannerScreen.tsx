@@ -6,6 +6,7 @@ import { getProfileConfig } from '../profiles';
 import { buildPlannerItems, usePlanner } from '../hooks/usePlanner';
 import { useSchedule } from '../hooks/useSchedule';
 import { MealIngredients } from './MealIngredients';
+import { AlarmManagementScreen } from './AlarmManagementScreen';
 import { useCart } from '../hooks/useCart';
 import { RECIPES } from '../data/recipes';
 import { useDietary } from '../hooks/useDietary';
@@ -18,10 +19,9 @@ const PALETTE = {
 type Props = {
   profile: Profile;
   colors: ThemeColors;
-  onSetAlarm?: () => void;
 };
 
-export function Layer2PlannerScreen({ profile, colors, onSetAlarm }: Props) {
+export function Layer2PlannerScreen({ profile, colors }: Props) {
   const [planTab, setPlanTab] = useState<'today' | 'calendar' | 'alarms' | 'reminders' | 'schedule'>('today');
   const [openId, setOpenId] = useState<string | null>(null);
   const {
@@ -118,8 +118,11 @@ export function Layer2PlannerScreen({ profile, colors, onSetAlarm }: Props) {
                       {item.expandText ?? ''}
                     </Text>
                   )}
-                  {item.id === 'bed' && onSetAlarm && (
-                    <Pressable onPress={onSetAlarm} style={[styles.alarmBtn, { borderColor: '#4a6a9a' }]}>
+                  {item.id === 'bed' && (
+                    <Pressable
+                      onPress={() => setPlanTab('alarms')}
+                      style={[styles.alarmBtn, { borderColor: '#4a6a9a' }]}
+                    >
                       <Text style={{ color: '#5a80b0', fontSize: 10, letterSpacing: 0.5 }}>SET ALARM</Text>
                     </Pressable>
                   )}
@@ -133,23 +136,7 @@ export function Layer2PlannerScreen({ profile, colors, onSetAlarm }: Props) {
           <Text style={{ color: colors.text }}>Calendar view lands in Layer 6.</Text>
         </View>
       )}
-      {planTab === 'alarms' && (
-        <View style={[styles.stubCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-          <Text style={{ color: colors.text, marginBottom: 8 }}>Alarm system activates after next update.</Text>
-          <Text style={{ color: colors.textMuted, fontSize: 12 }}>Wake alarm: {sleepWindow.wake}</Text>
-          <Text style={{ color: colors.textMuted, fontSize: 12 }}>Wind-down: {sleepWindow.windDown}</Text>
-          <View style={styles.otRow}>
-            {[1, 2, 4].map((h) => (
-              <Pressable key={h} onPress={() => setOvertime(h)} style={[styles.otBtn, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.textMuted }}>+{h}h OT</Text>
-              </Pressable>
-            ))}
-            <Pressable onPress={cancelOvertime} style={[styles.otBtn, { borderColor: colors.border }]}>
-              <Text style={{ color: colors.textMuted }}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
+      {planTab === 'alarms' && <AlarmManagementScreen profile={profile} colors={colors} />}
       {planTab === 'reminders' && (
         <View style={[styles.stubCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
           <Text style={{ color: colors.text }}>Reminders UI is queued for Layer 3.</Text>
