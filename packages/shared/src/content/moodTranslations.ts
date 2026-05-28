@@ -29,13 +29,13 @@ export function getMoodTranslation(score: number, viewer: Profile): string {
 }
 
 export function scoreToDot(score: number): number {
-  return Math.max(1, Math.min(5, Math.round(score / 2)));
+  return Math.max(1, Math.min(5, Math.round(score)));
 }
 
 export function scoreBracketLabel(score: number): string {
-  if (score <= 2) return 'Depleted. Heavy. Not okay.';
-  if (score <= 4) return 'Hard day. Running low.';
-  if (score <= 6) return 'Managing. Present. Holding.';
-  if (score <= 8) return 'Solid. Good capacity.';
+  if (score <= 1) return 'Depleted. Heavy. Not okay.';
+  if (score <= 2) return 'Hard day. Running low.';
+  if (score <= 3) return 'Managing. Present. Holding.';
+  if (score <= 4) return 'Solid. Good capacity.';
   return 'Exceptional. Resourced and clear.';
 }

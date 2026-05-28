@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Profile } from '../types';
 import type { ThemeColors } from '../colors';
 import { WEEK_PLAN } from '../data/weekPlan';
@@ -25,7 +25,8 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
   const [nourTab, setNourTab] = useState<'plan' | 'cart'>('plan');
   const [expWeek, setExpWeek] = useState<number | null>(null);
   const [expDay, setExpDay] = useState<string | null>(null);
-  const { diet, updateDiet, mealPasses } = useDietary();
+  const { diet, updateDiet, mealPasses, parseCustomAvoidances } = useDietary();
+  const [customText, setCustomText] = useState('');
   const {
     cart,
     addIngredient,
@@ -66,10 +67,13 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
           <Text style={[styles.filterHdr, { color: colors.textMuted }]}>Dietary filters</Text>
           {(
             [
-              ['nutAllergy', 'Nut allergy (NF only)'],
-              ['gerd', 'GERD safe'],
-              ['glutenFree', 'Gluten free'],
-              ['dairyFree', 'Dairy free'],
+              ['nutFree', 'Nut-free'],
+              ['gastricBypass', 'Post-gastric bypass'],
+              ['avoidFish', 'Avoid fish/seafood'],
+              ['avoidRawOnion', 'Avoid raw onion'],
+              ['avoidCilantro', 'Avoid cilantro'],
+              ['avoidStrongCheese', 'Avoid strong cheese'],
+              ['avoidMushrooms', 'Avoid cooked mushrooms'],
             ] as const
           ).map(([key, label]) => (
             <Pressable
@@ -134,6 +138,7 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
                                   mealName={mealName}
                                   colors={colors}
                                   accent={accent}
+                                  diet={diet}
                                   onAddIngredient={(ing: IngredientL2) => addIngredient(ing)}
                                   onAddAll={(name) => {
                                     const rec = RECIPES[name];
@@ -150,6 +155,30 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
               )}
             </View>
           ))}
+          <View style={[styles.customWrap, { borderColor: colors.border }]}>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginBottom: 6 }}>
+              Custom avoidances (comma-separated)
+            </Text>
+            <TextInput
+              value={customText}
+              onChangeText={setCustomText}
+              placeholder="e.g. shellfish, raw onion"
+              placeholderTextColor={colors.textDisabled}
+              style={[styles.customInput, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface }]}
+            />
+            <Pressable
+              onPress={async () => {
+                await parseCustomAvoidances(customText);
+                setCustomText('');
+              }}
+              style={[styles.weekAddAll, { borderColor: `${accent}44`, backgroundColor: `${accent}14`, marginHorizontal: 0 }]}
+            >
+              <Text style={[styles.weekAddAllText, { color: accent }]}>Update Meal Plan</Text>
+            </Pressable>
+            <Text style={{ color: colors.textDisabled, fontSize: 10, marginTop: 6 }}>
+              Current: {diet.customAvoidances.join(', ') || 'none'}
+            </Text>
+          </View>
         </>
       )}
 
@@ -186,4 +215,6 @@ const styles = StyleSheet.create({
   weekAddAllText: { fontSize: 10, textAlign: 'center', letterSpacing: 1, textTransform: 'uppercase' },
   dayHdr: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8 },
   mealCard: { marginHorizontal: 12, marginBottom: 8, padding: 10, borderWidth: 1, borderRadius: 6 },
+  customWrap: { borderWidth: 1, borderRadius: 8, padding: 12, marginTop: 12 },
+  customInput: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 8 },
 });

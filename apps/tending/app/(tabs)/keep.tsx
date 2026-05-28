@@ -1,10 +1,37 @@
-import { LockScreen } from '@/components/LockScreen';
+import { StyleSheet, Text, View } from 'react-native';
+import { SovereignScreen, useSovereignTheme } from '@/components/SovereignScreen';
 
 export default function KeepYourselfScreen() {
+  const colors = useSovereignTheme();
+
   return (
-    <LockScreen
-      tabName="Keep Yourself"
-      message="This opens when your foundation is set."
-    />
+    <SovereignScreen style={styles.screen}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Keep Yourself</Text>
+        <Text style={[styles.message, { color: colors.textMuted }]}>
+          This section is available and ready for the Layer 3 content import.
+        </Text>
+      </View>
+    </SovereignScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 16,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  message: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});

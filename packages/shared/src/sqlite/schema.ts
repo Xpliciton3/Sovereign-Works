@@ -44,6 +44,14 @@ CREATE TABLE IF NOT EXISTS planner_state (
   updatedAt INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS planner_schedule (
+  date TEXT PRIMARY KEY,
+  shift_type TEXT NOT NULL,
+  schedule_json TEXT NOT NULL,
+  generated_at INTEGER NOT NULL,
+  source TEXT DEFAULT 'groq'
+);
+
 CREATE TABLE IF NOT EXISTS alarm_configs (
   id TEXT PRIMARY KEY,
   hour INTEGER NOT NULL,

@@ -6,13 +6,14 @@ import {
 } from '../types/layer2';
 
 const DEFAULT: DietarySettingsL2 = {
-  nutAllergy: true,
-  gerd: false,
-  glutenFree: false,
-  dairyFree: false,
-  mthfr: true,
-  gbp: true,
-  onDutyFirst: false,
+  nutFree: false,
+  gastricBypass: false,
+  avoidFish: false,
+  avoidRawOnion: false,
+  avoidCilantro: false,
+  avoidStrongCheese: false,
+  avoidMushrooms: false,
+  customAvoidances: [],
 };
 
 export function useDietary() {
@@ -43,5 +44,21 @@ export function useDietary() {
     [diet]
   );
 
-  return { diet, updateDiet, mealPasses };
+  const parseCustomAvoidances = useCallback(async (raw: string) => {
+    const text = raw.toLowerCase();
+    const next: Partial<DietarySettingsL2> = {
+      customAvoidances: raw
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
+      avoidFish: text.includes('fish') || text.includes('seafood'),
+      avoidRawOnion: text.includes('raw onion') || text.includes('onion'),
+      avoidCilantro: text.includes('cilantro'),
+      avoidStrongCheese: text.includes('strong cheese') || text.includes('blue cheese'),
+      avoidMushrooms: text.includes('mushroom'),
+    };
+    await updateDiet(next);
+  }, [updateDiet]);
+
+  return { diet, updateDiet, mealPasses, parseCustomAvoidances };
 }

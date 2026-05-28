@@ -57,6 +57,27 @@ export interface RecipeRecord {
   ing: IngredientL2[];
   steps: string[];
   macros?: NutritionMacros;
+  alternatives?: {
+    nut_free?: {
+      subs: Array<{ ingredient: string; replace_with: string }>;
+      note?: string;
+    };
+    gastric_bypass?: {
+      portion_oz: number;
+      protein_first: string;
+      remove_or_modify: string[];
+      no_fluid_note: string;
+      protein_g: number;
+      soft_food_mod?: string;
+    };
+    aversion_flags?: {
+      fish?: boolean;
+      raw_onion?: boolean;
+      cilantro?: boolean;
+      strong_cheese?: boolean;
+      mushrooms?: boolean;
+    };
+  };
 }
 
 export interface PlanDayMeals {
@@ -92,19 +113,17 @@ export interface CartItemL2 {
 }
 
 export interface DietarySettingsL2 {
-  nutAllergy: boolean;
-  gerd: boolean;
-  glutenFree: boolean;
-  dairyFree: boolean;
-  mthfr: boolean;
-  gbp: boolean;
-  onDutyFirst: boolean;
+  nutFree: boolean;
+  gastricBypass: boolean;
+  avoidFish: boolean;
+  avoidRawOnion: boolean;
+  avoidCilantro: boolean;
+  avoidStrongCheese: boolean;
+  avoidMushrooms: boolean;
+  customAvoidances: string[];
 }
 
 export function mealPassesFilterL2(tags: string[], diet: DietarySettingsL2): boolean {
-  if (diet.nutAllergy && !tags.includes('NF')) return false;
-  if (diet.gerd && !tags.includes('GERD')) return false;
-  if (diet.glutenFree && !tags.includes('GF')) return false;
-  if (diet.dairyFree && !tags.includes('DF')) return false;
+  if (diet.nutFree && !tags.includes('NF')) return false;
   return true;
 }

@@ -1,17 +1,27 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RECIPES } from '../data/recipes';
-import type { IngredientL2 } from '../types/layer2';
+import type { DietarySettingsL2, IngredientL2 } from '../types/layer2';
 import type { ThemeColors } from '../colors';
 
 type Props = {
   mealName: string;
   colors: ThemeColors;
   accent: string;
+  diet?: DietarySettingsL2;
   onAddIngredient: (ing: IngredientL2) => void;
   onAddAll: (mealName: string) => void;
 };
 
-export function MealIngredients({ mealName, colors, accent, onAddIngredient, onAddAll }: Props) {
+const NUT_SWAPS: Array<[RegExp, string]> = [
+  [/almond butter/i, 'sunflower seed butter'],
+  [/cashew/i, 'sunflower seeds (soaked + blended)'],
+  [/walnut/i, 'pumpkin seeds'],
+  [/pine nut/i, 'hemp seeds'],
+  [/almond milk/i, 'oat milk'],
+  [/almond/i, 'sunflower seeds'],
+];
+
+export function MealIngredients({ mealName, colors, accent, diet, onAddIngredient, onAddAll }: Props) {
   const rec = RECIPES[mealName];
   if (!rec) {
     return (
@@ -21,8 +31,52 @@ export function MealIngredients({ mealName, colors, accent, onAddIngredient, onA
     );
   }
 
+  const applySubstitutions = (name: string): { rendered: string; changed: boolean } => {
+    let out = name;
+    let changed = false;
+    if (diet?.nutFree) {
+      for (const [pattern, replacement] of NUT_SWAPS) {
+        if (pattern.test(out)) {
+          out = `${out} -> ${replacement}`;
+          changed = true;
+          break;
+        }
+      }
+    }
+    if (diet?.avoidCilantro && /cilantro/i.test(out)) {
+      out = out.replace(/cilantro/gi, 'flat-leaf parsley');
+      changed = true;
+    }
+    if (diet?.avoidMushrooms && /mushroom/i.test(out)) {
+      out = out.replace(/mushroom/gi, 'zucchini');
+      changed = true;
+    }
+    if (diet?.avoidFish && /(salmon|tuna|cod|fish|seafood|shrimp)/i.test(out)) {
+      out = `${out} -> chicken thighs`;
+      changed = true;
+    }
+    if (diet?.avoidRawOnion && /raw onion/i.test(out)) {
+      out = out.replace(/raw onion/gi, 'roasted onion');
+      changed = true;
+    }
+    if (diet?.avoidStrongCheese && /(blue cheese|gorgonzola|aged cheddar|parmesan)/i.test(out)) {
+      out = `${out} -> mild mozzarella`;
+      changed = true;
+    }
+    return { rendered: out, changed };
+  };
+
   return (
     <View>
+      {diet?.gastricBypass && (
+        <View style={[styles.gbpBanner, { borderColor: `${accent}66`, backgroundColor: `${accent}14` }]}>
+          <Text style={[styles.gbpTitle, { color: accent }]}>Gastric Bypass Mode</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 11 }}>Portion: 4-6 oz · Eat protein first · Protein target 20g+</Text>
+          <Text style={{ color: colors.text, fontSize: 11, marginTop: 2 }}>
+            Do not drink 30 minutes before or after eating.
+          </Text>
+        </View>
+      )}
       {rec.macros && (
         <View style={styles.macroRow}>
           {[
@@ -43,10 +97,12 @@ export function MealIngredients({ mealName, colors, accent, onAddIngredient, onA
         </View>
       )}
       <Text style={[styles.section, { color: accent }]}>Ingredients</Text>
-      {rec.ing.map((ing, idx) => (
+      {rec.ing.map((ing, idx) => {
+        const swapped = applySubstitutions(ing.name);
+        return (
         <View key={idx} style={[styles.ingRow, { borderBottomColor: colors.border }]}>
           <View style={styles.ingText}>
-            <Text style={[styles.ingName, { color: colors.text }]}>{ing.name}</Text>
+            <Text style={[styles.ingName, { color: colors.text }]}>{swapped.rendered}</Text>
             <Text style={[styles.ingAmt, { color: colors.textMuted }]}> {ing.amt}</Text>
           </View>
           <Pressable
@@ -56,7 +112,7 @@ export function MealIngredients({ mealName, colors, accent, onAddIngredient, onA
             <Text style={[styles.cartBtnText, { color: accent }]}>+ Cart</Text>
           </Pressable>
         </View>
-      ))}
+      )})}
       <Pressable
         onPress={() => onAddAll(mealName)}
         style={[styles.addAll, { borderColor: `${accent}55`, backgroundColor: `${accent}14` }]}
@@ -81,6 +137,8 @@ export function MealIngredients({ mealName, colors, accent, onAddIngredient, onA
 const styles = StyleSheet.create({
   missing: { fontSize: 12, fontStyle: 'italic', paddingVertical: 8 },
   macroRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 10 },
+  gbpBanner: { borderWidth: 1, borderRadius: 6, padding: 8, marginBottom: 10 },
+  gbpTitle: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 },
   macroCell: {
     flex: 1,
     minWidth: 52,

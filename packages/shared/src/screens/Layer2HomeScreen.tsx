@@ -18,16 +18,9 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
   const pc = getProfileConfig(profile);
   const quote = getTodayQuote(profile);
   const { loggedOz, targetOz, percent, addOz } = useHydration(profile);
-  const { sleepWindow, overtimeHours } = useSchedule();
+  const { sleepWindow, overtimeHours, shiftLabel, setOvertime, cancelOvertime } = useSchedule();
   const [showMood, setShowMood] = useState(false);
   const [hub, setHub] = useState<'mind' | 'body' | 'soul' | null>(null);
-
-  const shiftLabel =
-    profile === 'imperium'
-      ? overtimeHours > 0
-        ? `OT +${overtimeHours}h`
-        : 'OFF DUTY'
-      : 'NIGHT — 7P–7A';
 
   return (
     <>
@@ -40,6 +33,21 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
           <Text style={[styles.shiftPartner, { color: '#c47878' }]}>
             Partner: {pc.partnerName}
           </Text>
+        </View>
+        <Text style={[styles.sleepLine, { color: colors.textMuted }]}>
+          WAKE {sleepWindow.wake} · SLEEP {sleepWindow.sleep}
+        </Text>
+        <View style={styles.quickRow}>
+          {[1, 2, 4].map((h) => (
+            <Pressable key={h} onPress={() => setOvertime(h)} style={[styles.quickBtn, { borderColor: colors.border }]}>
+              <Text style={{ color: colors.textMuted, fontSize: 10 }}>OT +{h}h</Text>
+            </Pressable>
+          ))}
+          {overtimeHours > 0 && (
+            <Pressable onPress={cancelOvertime} style={[styles.quickBtn, { borderColor: colors.border }]}>
+              <Text style={{ color: colors.textMuted, fontSize: 10 }}>Cancel OT</Text>
+            </Pressable>
+          )}
         </View>
 
         <View style={[styles.quoteCard, { borderLeftColor: colors.accent, borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -87,10 +95,10 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
         )}
 
         {hub === 'mind' && (
-          <Text style={[styles.locked, { color: colors.textMuted }]}>Mind hub opens at Day 7.</Text>
+          <Text style={[styles.locked, { color: colors.textMuted }]}>Mind hub content is in active build.</Text>
         )}
         {hub === 'soul' && (
-          <Text style={[styles.locked, { color: colors.textMuted }]}>Soul hub opens at Day 14.</Text>
+          <Text style={[styles.locked, { color: colors.textMuted }]}>Soul hub content is in active build.</Text>
         )}
 
         <Pressable onPress={() => setShowMood(true)} style={[styles.moodBtn, { borderColor: '#9060f055' }]}>
@@ -121,6 +129,9 @@ const styles = StyleSheet.create({
   shiftRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 12 },
   shift: { fontSize: 11, letterSpacing: 1 },
   shiftPartner: { fontSize: 11 },
+  sleepLine: { fontSize: 10, marginBottom: 8 },
+  quickRow: { flexDirection: 'row', gap: 6, marginBottom: 10, flexWrap: 'wrap' },
+  quickBtn: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6 },
   quoteCard: { borderLeftWidth: 3, borderWidth: 1, borderRadius: 8, padding: 16, marginBottom: 16 },
   quote: { fontSize: 16, fontStyle: 'italic', lineHeight: 24 },
   hubRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },

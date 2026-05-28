@@ -17,5 +17,7 @@ export * from './hooks/useMood';
 export * from './hooks/useSchedule';
 export * from './hooks/usePlanner';
 export * from './hooks/useDietary';
+export * from './ai/groqMood';
+export * from './ai/groqShiftPlanner';
 export * from './data/quotes';
 export * from './screens';

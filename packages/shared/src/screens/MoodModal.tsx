@@ -15,6 +15,7 @@ type Props = {
 
 export function MoodModal({ visible, onClose, profile, colors, householdId }: Props) {
   const [tab, setTab] = useState<'log' | 'partner' | 'history'>('log');
+  const [showSendActions, setShowSendActions] = useState(false);
   const mood = useMood(profile, householdId);
   const pc = getProfileConfig(profile);
   const mindColor = profile === 'imperium' ? '#9060f0' : '#9878b0';
@@ -41,8 +42,11 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
           <ScrollView style={styles.body}>
             {tab === 'log' && (
               <>
+                <Text style={[styles.privacy, { color: colors.textMuted }]}>
+                  Your notes are private. Only your score and a translated reflection are shared with your partner.
+                </Text>
                 <View style={styles.scoreRow}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                  {[1, 2, 3, 4, 5].map((n) => (
                     <Pressable
                       key={n}
                       onPress={() => mood.setScore(n)}
@@ -68,7 +72,9 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                   style={[styles.note, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 />
                 <Text style={[styles.transHdr, { color: mindColor }]}>Partner sees:</Text>
-                <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>{mood.translation}</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
+                  {mood.previewTranslation || 'Save entry to generate translation preview.'}
+                </Text>
                 <View style={styles.dots}>
                   {[1, 2, 3, 4, 5].map((d) => (
                     <View
@@ -86,19 +92,57 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                 </View>
                 <Pressable
                   onPress={async () => {
-                    await mood.submitMood();
+                    await mood.saveLocalMood();
+                    if (mood.note.trim().length > 0 && householdId) {
+                      await mood.generatePreview();
+                      setShowSendActions(true);
+                      return;
+                    }
+                    mood.clearPreview();
                     onClose();
                   }}
                   style={[styles.submit, { backgroundColor: mindColor }]}
                 >
-                  <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 1 }}>SUBMIT TO PARTNER FEED</Text>
+                  <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 1 }}>
+                    {mood.note.trim().length > 0 && householdId ? 'SAVE + PREVIEW' : 'SAVE ENTRY'}
+                  </Text>
                 </Pressable>
+                {mood.isTranslating && (
+                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 10 }}>
+                    Translating reflection...
+                  </Text>
+                )}
+                {showSendActions && mood.previewTranslation.length > 0 && (
+                  <View style={styles.actions}>
+                    <Pressable
+                      onPress={async () => {
+                        await mood.sendPreviewToPartner();
+                        mood.clearPreview();
+                        setShowSendActions(false);
+                        onClose();
+                      }}
+                      style={[styles.actionBtn, { borderColor: mindColor }]}
+                    >
+                      <Text style={{ color: mindColor, fontSize: 11, letterSpacing: 1 }}>SEND TO PARTNER</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        mood.clearPreview();
+                        setShowSendActions(false);
+                        onClose();
+                      }}
+                      style={[styles.actionBtn, { borderColor: colors.border }]}
+                    >
+                      <Text style={{ color: colors.textMuted, fontSize: 11, letterSpacing: 1 }}>KEEP PRIVATE</Text>
+                    </Pressable>
+                  </View>
+                )}
               </>
             )}
             {tab === 'partner' && (
               <View style={{ paddingVertical: 16 }}>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 12 }}>
-                  {pc.partnerName}&apos;s mood today (dot score only)
+                  {pc.partnerName}&apos;s translated mood today
                 </Text>
                 <View style={styles.dots}>
                   {[1, 2, 3, 4, 5].map((d) => (
@@ -121,6 +165,11 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                     No partner mood logged yet today.
                   </Text>
                 )}
+                {mood.partnerTranslation ? (
+                  <Text style={{ color: colors.text, fontSize: 13, lineHeight: 20, marginTop: 8 }}>
+                    {mood.partnerTranslation}
+                  </Text>
+                ) : null}
               </View>
             )}
             {tab === 'history' && (
@@ -154,11 +203,14 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#333' },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 10 },
   body: { padding: 16 },
+  privacy: { fontSize: 12, lineHeight: 18, marginBottom: 12 },
   scoreRow: { flexDirection: 'row', gap: 4, flexWrap: 'wrap' },
   scoreBtn: { flex: 1, minWidth: 28, height: 32, borderWidth: 1, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
   note: { borderWidth: 1, borderRadius: 6, padding: 10, height: 80, textAlignVertical: 'top', marginBottom: 12 },
   transHdr: { fontSize: 10, letterSpacing: 1, marginBottom: 6 },
   dots: { flexDirection: 'row', gap: 6, marginVertical: 12 },
   submit: { padding: 14, borderRadius: 6, alignItems: 'center', marginTop: 8 },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  actionBtn: { flex: 1, borderWidth: 1, borderRadius: 6, padding: 10, alignItems: 'center' },
   histRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 100, paddingVertical: 16 },
 });
