@@ -4,27 +4,9 @@
       "$householdId": {
         ".read": "auth != null",
         ".write": "auth != null",
-        "config": {
-          ".read": true,
-          ".write": "auth != null"
-        },
-        "calendar": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "shifts": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
         "mood": {
-          "imperium": {
-            "translatedEntries": {
-              ".read": "auth != null",
-              ".write": "auth != null"
-            }
-          },
-          "tending": {
-            "translatedEntries": {
+          "$profile": {
+            "$dateKey": {
               ".read": "auth != null",
               ".write": "auth != null"
             }
@@ -34,7 +16,7 @@
           ".read": "auth != null",
           ".write": "auth != null"
         },
-        "mealPlan": {
+        "planner": {
           ".read": "auth != null",
           ".write": "auth != null"
         },
@@ -42,27 +24,7 @@
           ".read": "auth != null",
           ".write": "auth != null"
         },
-        "warrior": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "keeper": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "doctrine": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "household": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "holyDays": {
-          ".read": "auth != null",
-          ".write": "auth != null"
-        },
-        "rite": {
+        "dietary": {
           ".read": "auth != null",
           ".write": "auth != null"
         }

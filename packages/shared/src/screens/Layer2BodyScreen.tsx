@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Profile } from '../types';
 import type { ThemeColors } from '../colors';
 import { Layer2NourishScreen } from './Layer2NourishScreen';
+import { PracticeScreen } from './PracticeScreen';
 
 type BodyTab = 'nourish' | 'practice' | 'hydration';
 
@@ -33,13 +34,7 @@ export function Layer2BodyScreen({ profile, colors }: Props) {
         ))}
       </View>
       {tab === 'nourish' && <Layer2NourishScreen profile={profile} colors={colors} />}
-      {tab === 'practice' && (
-        <View style={styles.stub}>
-          <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center', lineHeight: 20 }}>
-            {profile === 'imperium' ? "Warrior's Practice" : "Keeper's Practice"} — Layer 5+
-          </Text>
-        </View>
-      )}
+      {tab === 'practice' && <PracticeScreen profile={profile} colors={colors} />}
       {tab === 'hydration' && (
         <View style={styles.stub}>
           <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center' }}>

@@ -2,13 +2,13 @@
   "expo": {
     "name": "The Tending",
     "slug": "sovereign-tending",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sovereign-tending",
     "userInterfaceStyle": "automatic",
     "android": {
-      "versionCode": 15,
+      "versionCode": 16,
       "package": "com.sovereignworks.tending",
       "adaptiveIcon": {
         "backgroundColor": "#120A0E",
