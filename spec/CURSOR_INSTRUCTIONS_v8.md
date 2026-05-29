@@ -276,10 +276,12 @@ The mood tracker must have ALL of the following. Check each and fix what is miss
    - Submit saves to SQLite: rawScore, note, dotScore, timestamp
    - Brief confirmation animation after save
 
-2. GROQ TRANSLATION (AUTO-SYNC)
+2. GROQ TRANSLATION
    - After save: if note non-empty, call Groq (FIX_02 system prompts — use verbatim)
    - Translates note into PARTNER's tradition voice
-   - Automatically syncs { dotScore, translation, updatedAt } to Firebase — NO share button, NO preview gate
+   - Show translation preview — practitioner sees it before it sends
+   - [Send to Partner] button → syncs { dotScore, translation, updatedAt } to Firebase
+   - [Keep Private] button → stays local only
    - Raw note NEVER written to Firebase. Ever.
    - Firebase path: households/{id}/mood/{uid}/{dateKey}/ (see 02_FIREBASE_SCHEMA_FIXED)
 

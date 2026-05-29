@@ -18,7 +18,7 @@ type Props = {
   syncStatus: SyncStatus;
   joinCodeFormatted: string | null;
   partnerApkUrl: string;
-  onInvite?: () => void;
+  onOpenPartnerMood?: () => void;
   onRetrySync?: () => void;
 };
 
@@ -33,7 +33,7 @@ export function PartnerCard({
   syncStatus,
   joinCodeFormatted,
   partnerApkUrl,
-  onInvite,
+  onOpenPartnerMood,
   onRetrySync,
 }: Props) {
   const pc = getProfileConfig(profile);
@@ -71,7 +71,6 @@ export function PartnerCard({
                 message: householdShareMessage(joinCodeFormatted, partnerApkUrl),
               });
             }
-            onInvite?.();
           }}
           style={[styles.btn, { borderColor: colors.accent }]}
         >
@@ -82,7 +81,10 @@ export function PartnerCard({
   }
 
   return (
-    <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+    <Pressable
+      onPress={partnerJoined ? onOpenPartnerMood : undefined}
+      style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}
+    >
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <SyncStatusDot status={syncStatus} colors={colors} onRetry={onRetrySync} size={7} />
@@ -106,20 +108,25 @@ export function PartnerCard({
           />
         ))}
       </View>
-      {mood.partnerDot === null ? (
+      {mood.partnerDot === null && !mood.partnerTranslatedText ? (
         <Text style={{ color: colors.textDisabled, fontSize: 11, marginTop: 6 }}>No reading yet today.</Text>
-      ) : mood.partnerTranslation ? (
+      ) : mood.partnerTranslatedText ? (
         <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 6 }}>
-          {mood.partnerTranslation}
+          {mood.partnerTranslatedText}
         </Text>
-      ) : null}
+      ) : (
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>
+          Score only — no journal text today.
+        </Text>
+      )}
       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 10 }}>
         {partnerDoneCount} of {total} items complete today
       </Text>
       <Text style={{ color: colors.textDisabled, fontSize: 10, marginTop: 4 }}>
         {syncStatusLabel(syncStatus)}
+        {partnerJoined ? ' · Tap for mood history' : ''}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 

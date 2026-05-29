@@ -1,225 +1,322 @@
-# FIX 02 — MOOD GROQ TRANSLATION
-# The mood note Groq translation is partially wired in the APK
-# but the full flow is incomplete. This file completes the spec.
+# FIX 02 — MOOD NOTE GROQ TRANSLATION
+# Apply immediately. This does not require rebuilding Layer 2 from scratch.
+# Targeted change: mood modal note field → Groq translation → partner-facing text.
 
 ---
 
-## WHAT THE APK HAS (CONFIRMED WORKING)
+## WHAT IS WRONG
 
-- generatePartnerNote() function exists and fires after mood save
-- Groq call to llama-3.3-70b-versatile with mood score + raw note
-- Result stored as partnerNote in mood log
-- 5-dot partner card on Home tab reads dotScore
+The mood modal captures a score (1–10) and a free-text note.
+The "Auto-Translation" section currently shows a hardcoded bracket string
+based on the score number only (e.g. score ≤4 = "He's running low today...").
+The note the user types is stored privately but never processed.
 
----
+## WHAT IT SHOULD DO
 
-## WHAT IS MISSING
+When the user types a note and taps submit (or after a 1.5-second debounce
+from the last keystroke), the note goes to Groq with the score as context.
+Groq returns a translation in the partner's tradition register.
+That translation replaces the hardcoded bracket text in the "what your partner
+will see" preview area.
 
-1. **Translation preview before sync** — The translated note is stored
-   immediately. Practitioner has no chance to review it before it
-   is queued to Firebase.
-
-2. **Keep Private option** — No way to save a mood note locally without
-   it ever reaching Firebase.
-
-3. **Full mood modal with 3 tabs** — Only Log tab exists.
-   Partner tab and History tab are absent.
-
-4. **Mood in wrong location** — Mood entry appears outside the Mind hub.
-   It must live only in the Mind hub tile expansion.
+The raw note NEVER leaves the device. Only the Groq-translated output syncs
+to Firebase as the partner-facing text.
 
 ---
 
-## CORRECTED MOOD FLOW
+## THE GROQ CALL
+
+### System prompt for INTJ (Garrin logging, Holli reads)
 
 ```
-Practitioner opens mood modal from Mind hub tile (tap) or Planner mood item
+You are a mood translator for The Sovereign Traditions. The user is Garrin (INTJ, The Uncrowned). His partner is Holli (ESFJ, The Unspent/Keeper).
 
-TAB 1 — LOG
-  1. Score selector: 5 large circular buttons (1–5)
-     Color: 1=deep red, 2=orange, 3=amber, 4=teal-ish, 5=gold
-     Labels from 03_PROFILES.md bracket text (INTJ or ESFJ version)
-  2. Optional private note field (multiline, 500 char max)
-     Privacy note above field: "This note stays on your device."
-  3. [Save Entry] button
-     → writes to SQLite mood_entries table
-     → if Groq key exists AND note is non-empty:
-         calls Groq to generate partner translation
-         shows TRANSLATION PREVIEW SCREEN (see below)
-     → if no note or no Groq key:
-         stores dotScore to Firebase directly
-         closes modal
+Garrin has logged a mood score of {score}/10 and written this private note:
+"{note}"
 
-TRANSLATION PREVIEW SCREEN (fullscreen overlay, not a new tab)
-  Shows:
-    "Your entry: [score]/5 — [bracket label]"
-    "Your note will not be shared."
-    "Translation for [partner name]:"
-    [The Groq-generated translation in the partner's tradition voice]
-    
-  Two buttons:
-    [Send to Partner]  — queues translated note to Firebase, closes
-    [Keep Private]     — stores locally only, syncs dotScore only, closes
+Translate this into a 2–3 sentence message that Holli will see in her app.
+Write it in the ESFJ register: warm, relational, specific, actionable.
+Tell her what tonight looks like and one concrete thing that helps.
+Do NOT include the raw score number. Do NOT quote the original note.
+Do NOT mention "INTJ" or "ESFJ" or "traditions."
+Keep it under 60 words. Return only the translated message, no preamble.
+```
 
-TAB 2 — PARTNER
-  Reads from Firebase: households/{id}/mood/{partnerUid}/{todayKey}
-  Shows:
-    - 5 dot circles filled to partner's dot score
-    - Tradition-appropriate description below dots:
-        INTJ reading Tending dots: INTJ register description
-        ESFJ reading Imperium dots: ESFJ register description
-    - One-line Groq-translated partner note (if shared)
-    - "No reading yet today." if partner has not logged
+### System prompt for ESFJ (Holli logging, Garrin reads)
 
-TAB 3 — HISTORY
-  Scrollable list, newest first
-  Each entry:
-    - Date label
-    - Score as colored dot (same 5-color scheme)
-    - Tap to expand: shows original private note
-    - Swipe to delete with confirmation ("Delete this entry?")
-  
-  7-day mini chart below list:
-    7 dots in a row, colored by score, grayed if no entry
+```
+You are a mood translator for The Sovereign Traditions. The user is Holli (ESFJ, The Unspent/Keeper). Her partner is Garrin (INTJ, The Uncrowned).
+
+Holli has logged a mood score of {score}/10 and written this private note:
+"{note}"
+
+Translate this into a 2–3 sentence message that Garrin will see in his app.
+Write it in the INTJ register: direct, clear, specific, no softening.
+Tell him the current state and the one most useful response.
+Do NOT include the raw score number. Do NOT quote the original note.
+Do NOT mention "INTJ" or "ESFJ" or "traditions."
+Keep it under 60 words. Return only the translated message, no preamble.
 ```
 
 ---
 
-## GROQ TRANSLATION PROMPT
+## IMPLEMENTATION
+
+### 1 — Create packages/shared/ai/moodTranslation.ts
 
 ```typescript
-// packages/shared/src/ai/groqMoodTranslation.ts
+import Groq from 'groq-sdk';
+import { getGroqKey } from '../db/settings';
 
-const MOOD_TRANSLATION_SYSTEM = `You write warm, brief 1-2 sentence 
-emotional summaries for a partner. The reader is the practitioner's 
-spouse or partner. Use natural, caring language.
+const MODEL = 'llama-3.3-70b-versatile';
 
-CRITICAL RULES:
-- Never use numbers or scores
-- Never use clinical vocabulary (mood, psychology, functioning, etc.)
-- Never reproduce the raw note text
-- Write in third person about the practitioner
-- Translate the emotional gist, not the literal content
-- Match the reader's tradition register (given in the user message)
-- Keep it brief: 1-2 sentences only`;
+const SYSTEM_PROMPTS = {
+  IMP: (score: number, note: string) =>
+    `You are a mood translator for The Sovereign Traditions. The user is Garrin (INTJ). His partner is Holli (ESFJ/Keeper).
 
-async function generateMoodTranslation(
-  score: number,      // 1-5 dot score
-  rawNote: string,    // private note text
-  readerTradition: 'imperium' | 'tending',
-  groqKey: string
+Garrin has logged a mood score of ${score}/10 and written this private note:
+"${note}"
+
+Translate this into a 2–3 sentence message Holli will see. Write in the ESFJ register: warm, relational, specific, actionable. Tell her what tonight looks like and one concrete thing that helps. Do NOT include the score number. Do NOT quote the note. Do NOT mention personality types or tradition names. Under 60 words. Return only the translated message.`,
+
+  TEND: (score: number, note: string) =>
+    `You are a mood translator for The Sovereign Traditions. The user is Holli (ESFJ/Keeper). Her partner is Garrin (INTJ/Uncrowned).
+
+Holli has logged a mood score of ${score}/10 and written this private note:
+"${note}"
+
+Translate this into a 2–3 sentence message Garrin will see. Write in the INTJ register: direct, clear, no softening. Tell him the current state and the one most useful response. Do NOT include the score number. Do NOT quote the note. Do NOT mention personality types or tradition names. Under 60 words. Return only the translated message.`,
+};
+
+export async function translateMoodNote(
+  score: number,
+  note: string,
+  profile: 'IMP' | 'TEND'
 ): Promise<string> {
-  const registerNote = readerTradition === 'imperium'
-    ? 'The reader values directness and understands things in terms of strength, clarity, and mission. Write in those terms.'
-    : 'The reader values warmth, connection, and care. Write in terms of feelings, relationship, and being present.';
-  
-  const prompt = `Score: ${score}/5. Raw note: "${rawNote}".
-${registerNote}
-Write a 1-2 sentence translation for this reader.`;
+  const apiKey = await getGroqKey();
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${groqKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      max_tokens: 100,
-      temperature: 0.65,
+  // If no note provided, fall back to bracket label
+  if (!note.trim()) {
+    return getFallbackTranslation(score, profile);
+  }
+
+  // If no API key, fall back to bracket label
+  if (!apiKey) {
+    return getFallbackTranslation(score, profile);
+  }
+
+  try {
+    const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      max_tokens: 120,
+      temperature: 0.6,
       messages: [
-        { role: 'system', content: MOOD_TRANSLATION_SYSTEM },
-        { role: 'user', content: prompt },
+        {
+          role: 'user',
+          content: SYSTEM_PROMPTS[profile](score, note),
+        },
       ],
-    }),
-  });
-  const data = await response.json();
-  return data.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+    });
+
+    const translation = response.choices[0]?.message?.content?.trim();
+    if (!translation) return getFallbackTranslation(score, profile);
+    return translation;
+
+  } catch (err) {
+    console.error('Mood translation failed:', err);
+    return getFallbackTranslation(score, profile);
+  }
+}
+
+function getFallbackTranslation(score: number, profile: 'IMP' | 'TEND'): string {
+  const brackets = {
+    IMP: [
+      "He's carrying something heavy today. No demands tonight. Just be near.",
+      "He's running low today. A quiet evening without expectations is what helps.",
+      "He's managing today. Moderate load. A calm evening is welcome.",
+      "He's solid today. Good capacity. Connection and conversation are welcome.",
+      "He's exceptional today. Clear, resourced. Great night for connection.",
+    ],
+    TEND: [
+      "She's in a hard place today. No processing. Presence only.",
+      "She's depleted today. Keep things low-key. Check in gently.",
+      "She's holding steady. Present. A check-in is welcome.",
+      "She's doing well. She'd welcome real time together.",
+      "She's at full capacity. Wonderful day. She'd love to connect.",
+    ],
+  };
+
+  const idx = score <= 2 ? 0 : score <= 4 ? 1 : score <= 6 ? 2 : score <= 8 ? 3 : 4;
+  return brackets[profile][idx];
 }
 ```
 
----
+### 2 — Wire it into the mood modal (useMood hook or MoodModal component)
 
-## FIREBASE WRITE — WHAT SYNCS
-
-Only these fields ever leave the device:
+The flow:
+1. User types in the note field → debounce 1500ms
+2. After debounce fires (or on submit tap), call `translateMoodNote(score, note, profile)`
+3. Show a loading state in the translation preview area: "Translating..." in muted text
+4. On response: replace the hardcoded bracket text with the Groq translation
+5. On submit tap: save the translated text (not the raw note) to SQLite + Firebase
 
 ```typescript
-// Firebase path: households/{householdId}/mood/{uid}/{dateKey}
-{
-  dotScore: number,      // Math.ceil(rawScore / 2), range 1-5
-  partnerNote: string,   // Groq-translated version — if user tapped [Send to Partner]
-  ts: number,            // unix timestamp
-}
+// In your mood modal component or useMood hook:
 
-// NEVER written to Firebase:
-// - rawScore
-// - rawNote
-// - bracket label text
-// - any user-typed text
+const [translating, setTranslating] = useState(false);
+const [translation, setTranslation] = useState('');
+const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+// When score changes with no note, update translation immediately (fallback)
+useEffect(() => {
+  if (!moodNote.trim()) {
+    setTranslation(getFallbackTranslation(score, profile));
+  }
+}, [score]);
+
+// When note changes, debounce the Groq call
+const handleNoteChange = (text: string) => {
+  setMoodNote(text);
+
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+
+  debounceRef.current = setTimeout(async () => {
+    if (!text.trim()) {
+      setTranslation(getFallbackTranslation(score, profile));
+      return;
+    }
+    setTranslating(true);
+    const result = await translateMoodNote(score, text, profile);
+    setTranslation(result);
+    setTranslating(false);
+  }, 1500);
+};
+
+// In the translation preview area, show:
+// - "Translating..." while translating
+// - The translation string when done
+// - The fallback when no note
+
+// On submit:
+const handleSubmit = async () => {
+  // If note exists but translation isn't ready yet, wait
+  if (moodNote.trim() && translating) {
+    // Wait for translation to complete
+    return;
+  }
+
+  const finalTranslation = translation || getFallbackTranslation(score, profile);
+  const dotScore = Math.ceil(score / 2);
+
+  // Save to SQLite: score (raw), note (raw), translation, dotScore
+  await saveMoodEntry({
+    score,
+    note: moodNote,          // stays on device only
+    translation: finalTranslation,  // this is what partner sees
+    dotScore,
+    loggedAt: Date.now(),
+  });
+
+  // Sync to Firebase: dotScore + translation ONLY (never raw score or note)
+  await writeShared(`households/${householdId}/mood/${uid}/${todayKey}`, {
+    dotScore,
+    translation: finalTranslation,
+    updatedAt: Date.now(),
+  });
+
+  setShowMood(false);
+  setMoodNote('');
+  setTranslation('');
+  showToast('Shared with ' + partnerName);
+};
+```
+
+### 3 — Translation preview UI
+
+In the "Auto-Translation — what [partner] will see" block:
+
+```typescript
+<View style={styles.translationCard}>
+  <Text style={styles.translationLabel}>
+    What {partnerName} will see
+  </Text>
+
+  {translating ? (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <ActivityIndicator size="small" color={T.teal} />
+      <Text style={[styles.translationText, { color: T.t3 }]}>
+        Translating...
+      </Text>
+    </View>
+  ) : (
+    <Text style={[styles.translationText, { fontStyle: 'italic' }]}>
+      {translation || getFallbackTranslation(score, profile)}
+    </Text>
+  )}
+
+  {/* Dot score preview */}
+  <View style={{ flexDirection: 'row', gap: 4, marginTop: 8 }}>
+    {[1,2,3,4,5].map(d => (
+      <View
+        key={d}
+        style={{
+          width: 10, height: 10, borderRadius: 5,
+          backgroundColor: d <= dotScore ? T.teal : T.s3,
+          borderWidth: 1, borderColor: T.b2,
+        }}
+      />
+    ))}
+  </View>
+
+  <Text style={styles.dotLabel}>
+    Dot score only · Raw note stays on device
+  </Text>
+</View>
 ```
 
 ---
 
-## MOOD ENTRY IN PLANNER
+## PARTNER TAB — RECEIVING END
 
-The planner item id 'mood' ("Log Mood") in Today sub-tab:
-- Tapping it opens the mood modal directly to the Log tab
-- Completing the log (any path through) marks the planner item done
-- Planner item does NOT include a score entry itself — modal handles it
+When reading the partner's mood in the Partner tab, display the `translation`
+field (not a score-based bracket) pulled from Firebase.
 
----
-
-## SQLITE TABLES
-
-```sql
--- mood_entries: raw private data, never leaves device
-CREATE TABLE IF NOT EXISTS mood_entries (
-  id TEXT PRIMARY KEY,
-  date TEXT NOT NULL,           -- YYYY-MM-DD
-  dot_score INTEGER NOT NULL,   -- 1-5
-  raw_note TEXT,                -- private, device only
-  partner_note TEXT,            -- Groq translation, only if user sent
-  sent_to_partner INTEGER DEFAULT 0,  -- 1 if user tapped [Send to Partner]
-  created_at INTEGER NOT NULL
+```typescript
+// Firebase listener for partner mood:
+onValue(
+  ref(db, `households/${householdId}/mood/${partnerUid}/${todayKey}`),
+  snap => {
+    const data = snap.val();
+    if (data) {
+      setPartnerDot(data.dotScore);
+      setPartnerTranslation(data.translation); // ← use this, not a bracket
+    }
+  }
 );
 
--- mood_partner_cache: last-read partner dot scores, for offline display
-CREATE TABLE IF NOT EXISTS mood_partner_cache (
-  uid TEXT NOT NULL,
-  date TEXT NOT NULL,
-  dot_score INTEGER,
-  partner_note TEXT,
-  synced_at INTEGER,
-  PRIMARY KEY (uid, date)
-);
+// Display in Partner tab:
+<Text style={[styles.translationText, { fontStyle: 'italic' }]}>
+  {partnerTranslation || 'No reading yet today.'}
+</Text>
 ```
 
 ---
 
-## BUILD SEQUENCE
+## WHAT DOES NOT CHANGE
 
-```
-M.01  Remove mood entry from anywhere outside Mind hub
-      (confirmed issue in APK v1.0.10)
+- Raw score still determines the dot count (Math.ceil(score/2))
+- Raw note never leaves the device
+- Raw score never syncs to Firebase
+- Fallback brackets still fire when note is empty or Groq key is missing
+- The history tab still shows personal dot score chart (no notes displayed)
 
-M.02  Build mood modal with 3 tabs: Log, Partner, History
+---
 
-M.03  Build Translation Preview Screen overlay
-      (shows before any Firebase write if note + Groq key present)
+## AFTER COMPLETING THIS FIX
 
-M.04  Wire [Send to Partner] → queues to Firebase sync
-M.05  Wire [Keep Private] → skips Firebase translation sync
-
-M.06  History tab: scrollable list, swipe-to-delete, 7-day mini chart
-
-M.07  Partner tab: Firebase listener for partner dotScore + partnerNote
-
-M.08  Mind hub tile: tap opens mood modal, dot count shows on tile
-
-M.09  Planner mood item: tap opens mood modal Log tab directly
-
-M.10  Verify: raw note never appears in Firebase (check network traffic)
-M.11  Verify: Translation Preview shows before any sync occurs
-M.12  Verify: Keep Private → partner tab shows dotScore only (no note)
-```
+Build both APKs, push to GitHub, tell Garrin:
+- "Fix 02 complete."
+- "Type something in the mood note field — Groq translates it in real time."
+- "APKs: [filenames]"
+- "Install and test. Tell me when you're ready for Layer 3."

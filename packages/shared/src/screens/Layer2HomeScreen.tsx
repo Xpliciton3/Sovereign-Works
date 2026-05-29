@@ -3,7 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Profile } from '../types';
 import type { ThemeColors } from '../colors';
 import { getProfileConfig } from '../profiles';
-import { getTodayQuote } from '../data/quotes';
+import { useDailyQuote } from '../hooks/useDailyQuote';
+import { FONT_FAMILIES } from '../typography';
 import { useHydration } from '../hooks/useHydration';
 import { useSchedule } from '../hooks/useSchedule';
 import { useShiftPlanner } from '../hooks/useShiftPlanner';
@@ -19,11 +20,12 @@ type Props = {
   colors: ThemeColors;
   partnerApkUrl: string;
   onOpenHolyDays?: () => void;
+  onOpenSettings?: () => void;
 };
 
-export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDays }: Props) {
+export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDays, onOpenSettings }: Props) {
   const pc = getProfileConfig(profile);
-  const quote = getTodayQuote(profile);
+  const { quote } = useDailyQuote(profile);
   const hh = useHouseholdContext();
   const { loggedOz, targetOz, percent, addOz, removeOz, resetToday } = useHydration(profile);
   const {
@@ -38,6 +40,7 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
   const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
   const { partnerDoneCount, partnerTotalCount } = usePlanner(profile, hh.householdId);
   const [showMood, setShowMood] = useState(false);
+  const [moodTab, setMoodTab] = useState<'log' | 'partner' | 'history'>('log');
   const [hub, setHub] = useState<'mind' | 'body' | 'soul' | null>(null);
   const imp = profile === 'imperium';
 
@@ -46,7 +49,14 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
       <ScrollView style={[styles.root, { backgroundColor: colors.background }]} contentContainerStyle={styles.pad}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.accent }]}>{pc.displayName}</Text>
-          <SyncStatusDot status={hh.syncStatus} colors={colors} onRetry={() => void hh.retrySync()} />
+          <View style={styles.titleRight}>
+            {onOpenSettings ? (
+              <Pressable onPress={onOpenSettings} hitSlop={8}>
+                <Text style={{ color: colors.textMuted, fontSize: 10, letterSpacing: 1 }}>SETTINGS</Text>
+              </Pressable>
+            ) : null}
+            <SyncStatusDot status={hh.syncStatus} colors={colors} onRetry={() => void hh.retrySync()} />
+          </View>
         </View>
         <Text style={[styles.person, { color: colors.textMuted }]}>{pc.personName} · {pc.practitionerTitle}</Text>
 
@@ -62,6 +72,10 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
           joinCodeFormatted={hh.joinCodeFormatted}
           partnerApkUrl={partnerApkUrl}
           onRetrySync={() => void hh.retrySync()}
+          onOpenPartnerMood={() => {
+            setMoodTab('partner');
+            setShowMood(true);
+          }}
         />
 
         <View style={[styles.shiftRow, { borderColor: colors.border }]}>
@@ -85,7 +99,12 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
         </View>
 
         <View style={[styles.quoteCard, { borderLeftColor: colors.accent, borderColor: colors.border, backgroundColor: colors.surface }]}>
-          <Text style={[styles.quote, { color: colors.text }]}>{quote}</Text>
+          <Text style={[styles.quote, { color: colors.text, fontFamily: FONT_FAMILIES.displayI }]}>
+            "{quote.text}"
+          </Text>
+          <Text style={[styles.quoteAuthor, { color: colors.textMuted, fontFamily: FONT_FAMILIES.uiLight }]}>
+            — {quote.author}
+          </Text>
         </View>
 
         <View style={styles.hubRow}>
@@ -109,7 +128,13 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
 
         {hub === 'mind' && (
           <View style={[styles.hubPanel, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-            <Pressable onPress={() => setShowMood(true)} style={[styles.hubAction, { borderColor: '#9060f055' }]}>
+            <Pressable
+              onPress={() => {
+                setMoodTab('log');
+                setShowMood(true);
+              }}
+              style={[styles.hubAction, { borderColor: '#9060f055' }]}
+            >
               <SvgIcon name="brain" size={16} color="#9060f0" />
               <Text style={{ color: '#9060f0', fontSize: 11, letterSpacing: 1 }}>MOOD TRACKER</Text>
             </Pressable>
@@ -161,6 +186,7 @@ export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDay
           profile={profile}
           colors={colors}
           householdId={hh.householdId}
+          initialTab={moodTab}
         />
       )}
     </>
@@ -171,6 +197,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   pad: { padding: 16, paddingTop: 48, paddingBottom: 40 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   title: { fontSize: 20, letterSpacing: 2, textTransform: 'uppercase' },
   person: { fontSize: 12, marginBottom: 12 },
   shiftRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 12 },
@@ -180,6 +207,7 @@ const styles = StyleSheet.create({
   quickBtn: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6 },
   quoteCard: { borderLeftWidth: 3, borderWidth: 1, borderRadius: 8, padding: 16, marginBottom: 16 },
   quote: { fontSize: 16, fontStyle: 'italic', lineHeight: 24 },
+  quoteAuthor: { fontSize: 11, marginTop: 10, letterSpacing: 0.5 },
   hubRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   hubTile: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 12, alignItems: 'center', gap: 6 },
   hubPanel: { borderWidth: 1, borderRadius: 8, padding: 14, marginBottom: 12 },

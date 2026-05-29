@@ -12,6 +12,7 @@ import {
 } from './buildExtendedAlarms';
 import { buildGroqPlannerAlarms } from './buildGroqAlarms';
 import { parseClock12, subtractMinutes } from './timeParse';
+import { isAlarmSuppressed } from './isAlarmSuppressed';
 import type { SovereignAlarm } from './types';
 import { checkAlarmPermissions } from './permissionsFlow';
 
@@ -38,12 +39,17 @@ const DEFAULT_NOTIF: NotifSettings = {
 export function buildSleepAlarms(
   profile: Profile,
   sleepWindow: SleepWindow,
-  isWorkDay: boolean
+  isWorkDay: boolean,
+  activeWindow?: Pick<DailySchedule, 'activeWindowStart' | 'activeWindowEnd'> | null
 ): SovereignAlarm[] {
   const labels = labelsFor(profile);
   const wake = parseClock12(sleepWindow.wake);
   const sleep = parseClock12(sleepWindow.sleep);
   const wind = subtractMinutes(sleepWindow.sleep, 60);
+  const winStart = activeWindow?.activeWindowStart ?? null;
+  const winEnd = activeWindow?.activeWindowEnd ?? null;
+  const windSuppressed = isAlarmSuppressed(wind.hour, wind.minute, isWorkDay, winStart, winEnd);
+  const sleepSuppressed = isAlarmSuppressed(sleep.hour, sleep.minute, isWorkDay, winStart, winEnd);
   const alarms: SovereignAlarm[] = [
     {
       id: `${profile}-winddown`,
@@ -54,7 +60,7 @@ export function buildSleepAlarms(
       vibrate: true,
       snoozeMinutes: 9,
       alarmType: 'winddown',
-      enabled: true,
+      enabled: !windSuppressed,
     },
     {
       id: `${profile}-sleep`,
@@ -65,7 +71,7 @@ export function buildSleepAlarms(
       vibrate: true,
       snoozeMinutes: 9,
       alarmType: 'sleep',
-      enabled: true,
+      enabled: !sleepSuppressed,
     },
   ];
   if (isWorkDay) {
@@ -143,7 +149,7 @@ export function useAlarms(profile: Profile) {
       hydrationGoalMet: boolean,
       shiftSchedule?: DailySchedule | null
     ) => {
-      const built = buildSleepAlarms(profile, sleepWindow, isWorkDay);
+      const built = buildSleepAlarms(profile, sleepWindow, isWorkDay, shiftSchedule ?? null);
       const custom = alarms.filter((a) => a.alarmType === 'custom' && !a.id.includes('-groq-'));
       let extended: SovereignAlarm[] = [...built];
 

@@ -8,6 +8,7 @@
 | Raw note text | ✓ Device only | ✗ Never |
 | Bracket translation | ✓ Device only | ✗ Never |
 | Dot score (1–5) | ✓ SQLite | ✓ Firebase |
+| Groq translation | ✓ SQLite cache | ✓ Firebase (auto on save) |
 | Updated timestamp | ✓ SQLite | ✓ Firebase |
 
 Dot score = Math.ceil(rawScore / 2). Range 1–5.
@@ -18,7 +19,7 @@ Dot score = Math.ceil(rawScore / 2). Range 1–5.
 - Slider or number input: 1–10
 - Optional note field (private — never leaves device)
 - Bracket translation shown in real time as score changes (from 03_PROFILES.md)
-- Submit button → writes to SQLite + queues Firebase sync (dot score only)
+- Submit button → writes to SQLite, Groq translates note if present, auto-syncs dot score + translation to Firebase (no share button)
 
 ### Partner tab
 - Shows partner's dot score for today: 5 circles, filled count = dot score

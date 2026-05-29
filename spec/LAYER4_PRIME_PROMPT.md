@@ -26,7 +26,11 @@ When Garrin logs a mood — Holli sees it. When Holli adds to the grocery cart
 
 Layer 4 scope:
 - Firebase Realtime Database live listeners on both devices
-- Mood sync (dot score only — raw note stays local forever)
+- Mood sync:
+    - dotScore (1–5): syncs to Firebase ✓
+    - Groq translation: syncs to Firebase ✓ (auto on save — no share button)
+    - Raw score (1–10): NEVER leaves device ✗
+    - Raw note text: NEVER leaves device ✗
 - Grocery cart sync (full shared list, both can add/check/remove)
 - Planner completion sync (Garrin checks off "Morning Declaration" — Holli sees it done)
 - Partner mood feed rendering (in partner's tradition register)
@@ -76,7 +80,8 @@ households/
     mood/
       {uid}/
         {dateKey}/              ← "2025-01-14"
-          dotScore: 1–5         ← ONLY this syncs. Raw note stays on device.
+          dotScore: 1–5         ← syncs
+          translation: string   ← syncs (Groq output only — never raw note text)
           updatedAt: timestamp
     grocery/
       currentList/
@@ -183,19 +188,23 @@ If local `updatedAt` > Firebase `updatedAt` → local wins.
 ## MOOD SYNC — EXACT RULES
 
 ```typescript
-// WHAT SYNCS:
-// dotScore (1–5, rounded from raw 1–10 score)
+// WHAT SYNCS TO FIREBASE:
+// dotScore (1–5) = Math.ceil(rawScore / 2)
+// translation = Groq-generated text in partner's tradition register
 // updatedAt timestamp
 
 // WHAT NEVER LEAVES THE DEVICE:
 // Raw score (the actual 1–10 number)
 // Raw note text (the words the user typed)
-// Groq translation (generated locally, stored locally)
 
-// Firebase write on mood submit:
+// Firebase write on mood submit (auto — no manual share step):
 await writeShared(
   `households/${householdId}/mood/${uid}/${dateKey}`,
-  { dotScore: Math.ceil(score / 2), updatedAt: Date.now() }
+  {
+    dotScore: Math.ceil(score / 2),
+    translation: finalTranslation,
+    updatedAt: Date.now(),
+  }
 );
 
 // Partner feed reads:
@@ -203,7 +212,9 @@ const partnerMoodRef = ref(db,
   `households/${householdId}/mood/${partnerUid}/${dateKey}`
 );
 onValue(partnerMoodRef, snapshot => {
-  setPartnerDotScore(snapshot.val()?.dotScore ?? null);
+  const data = snapshot.val();
+  setPartnerDotScore(data?.dotScore ?? null);
+  setPartnerTranslation(data?.translation ?? data?.translatedText ?? null);
 });
 ```
 

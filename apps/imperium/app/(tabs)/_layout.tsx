@@ -6,6 +6,9 @@ import { PROFILE } from '@/constants/profile';
 const ICON_MAP: Record<string, IconName> = {
   home: 'home',
   plan: 'plan',
+  brain: 'brain',
+  drop: 'drop',
+  star: 'star',
   leaf: 'leaf',
   more: 'more',
 };
@@ -42,6 +45,8 @@ export default function TabLayout() {
           }}
         />
       ))}
+      <Tabs.Screen name="nourish" options={{ href: null }} />
+      <Tabs.Screen name="more" options={{ href: null }} />
       <Tabs.Screen name="warrior" options={{ href: null }} />
       <Tabs.Screen name="doctrine" options={{ href: null }} />
     </Tabs>

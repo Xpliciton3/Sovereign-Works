@@ -28,14 +28,15 @@ export function getMoodTranslation(score: number, viewer: Profile): string {
     : "She's fully present and open today. This is a good day to connect.";
 }
 
-export function scoreToDot(score: number): number {
-  return Math.max(1, Math.min(5, Math.round(score)));
+/** Raw entry 1–10 → partner dot 1–5 (CONTRADICTION_AUDIT C-01). */
+export function scoreToDot(rawScore: number): number {
+  return Math.max(1, Math.min(5, Math.ceil(rawScore / 2)));
 }
 
-export function scoreBracketLabel(score: number): string {
-  if (score <= 1) return 'Depleted. Heavy. Not okay.';
-  if (score <= 2) return 'Hard day. Running low.';
-  if (score <= 3) return 'Managing. Present. Holding.';
-  if (score <= 4) return 'Solid. Good capacity.';
+export function scoreBracketLabel(rawScore: number): string {
+  if (rawScore <= 2) return 'Depleted. Heavy. Not okay.';
+  if (rawScore <= 4) return 'Hard day. Running low.';
+  if (rawScore <= 6) return 'Managing. Present. Holding.';
+  if (rawScore <= 8) return 'Solid. Good capacity.';
   return 'Exceptional. Resourced and clear.';
 }
