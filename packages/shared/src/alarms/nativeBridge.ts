@@ -7,6 +7,8 @@ type SovereignAlarmNative = {
   requestOverlayPermission?: () => Promise<void>;
   canScheduleExactAlarms?: () => Promise<boolean>;
   canDrawOverlays?: () => Promise<boolean>;
+  getPendingAlarmLog?: () => Promise<string>;
+  clearPendingAlarmLog?: () => Promise<void>;
 };
 
 const Native = NativeModules.SovereignAlarmModule as SovereignAlarmNative | undefined;
@@ -59,5 +61,23 @@ export async function canDrawOverlays(): Promise<boolean> {
     return await Native.canDrawOverlays();
   } catch {
     return false;
+  }
+}
+
+export async function flushNativeAlarmLog(): Promise<void> {
+  if (Platform.OS !== 'android' || !Native?.getPendingAlarmLog) return;
+  try {
+    const raw = await Native.getPendingAlarmLog();
+    if (!raw || raw === '[]') return;
+    const events = JSON.parse(raw) as Array<{
+      alarm_id: string;
+      dismissed_type: string;
+      dismissed_at: number;
+    }>;
+    const { logNativePendingEvents } = await import('./alarmLog');
+    await logNativePendingEvents(events);
+    await Native.clearPendingAlarmLog?.();
+  } catch {
+    // native module optional
   }
 }

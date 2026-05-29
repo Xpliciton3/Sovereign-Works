@@ -1,26 +1,32 @@
-export const TYPOGRAPHY = {
-  imperium: {
-    displayFont: 'Cormorant',
-    bodyFont: 'Inter',
-    monoFont: 'JetBrainsMono',
-    displaySize: { xl: 32, lg: 24, md: 20, sm: 16 },
-    bodySize: { lg: 16, md: 14, sm: 12 },
-    letterSpacing: { display: 2, body: 0.3, caps: 4 },
-    lineHeight: { display: 1.2, body: 1.6 },
-  },
-  tending: {
-    displayFont: 'Cormorant',
-    bodyFont: 'Inter',
-    monoFont: 'JetBrainsMono',
-    displaySize: { xl: 30, lg: 22, md: 20, sm: 16 },
-    bodySize: { lg: 16, md: 14, sm: 12 },
-    letterSpacing: { display: 1, body: 0.2, caps: 3 },
-    lineHeight: { display: 1.3, body: 1.7 },
-  },
+import {
+  CormorantGaramond_400Regular,
+  CormorantGaramond_400Regular_Italic,
+  CormorantGaramond_600SemiBold,
+} from '@expo-google-fonts/cormorant-garamond';
+import {
+  JosefinSans_300Light,
+  JosefinSans_400Regular,
+  JosefinSans_600SemiBold,
+} from '@expo-google-fonts/josefin-sans';
+import { useFonts } from 'expo-font';
+
+export const FONT_FAMILIES = {
+  display: 'CormorantGaramond_400Regular',
+  displayI: 'CormorantGaramond_400Regular_Italic',
+  displayB: 'CormorantGaramond_600SemiBold',
+  ui: 'JosefinSans_400Regular',
+  uiLight: 'JosefinSans_300Light',
+  uiSemi: 'JosefinSans_600SemiBold',
 } as const;
 
-export type ProfileTypography = typeof TYPOGRAPHY.imperium;
-
-export function getTypography(profile: 'imperium' | 'tending'): ProfileTypography {
-  return TYPOGRAPHY[profile];
+export function useSovereignFonts(extraFonts?: Record<string, number>) {
+  return useFonts({
+    CormorantGaramond_400Regular,
+    CormorantGaramond_400Regular_Italic,
+    CormorantGaramond_600SemiBold,
+    JosefinSans_300Light,
+    JosefinSans_400Regular,
+    JosefinSans_600SemiBold,
+    ...extraFonts,
+  });
 }

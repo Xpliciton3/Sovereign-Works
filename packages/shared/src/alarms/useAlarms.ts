@@ -4,7 +4,7 @@ import type { Profile } from '../types';
 import type { SleepWindow } from '../utils/sleepWindow';
 import type { DailySchedule } from '../ai/groqShiftPlanner';
 import { labelsFor } from './alarmLabels';
-import { logAlarmScheduled } from './alarmLog';
+import { rescheduleAllAlarms } from './alarmManager';
 import {
   buildBatchCookAlarms,
   buildHydrationFromTimes,
@@ -13,7 +13,6 @@ import {
 import { buildGroqPlannerAlarms } from './buildGroqAlarms';
 import { parseClock12, subtractMinutes } from './timeParse';
 import type { SovereignAlarm } from './types';
-import { rescheduleNativeAlarms } from './nativeBridge';
 import { checkAlarmPermissions } from './permissionsFlow';
 
 function storageKey(profile: Profile): string {
@@ -21,6 +20,8 @@ function storageKey(profile: Profile): string {
 }
 
 const NOTIF_KEY = 'sovereign_notif_settings';
+const SNOOZE_KEY = 'sovereign_alarm_snooze_default';
+export const SNOOZE_OPTIONS = [5, 9, 15] as const;
 
 export type NotifSettings = {
   batchCook: boolean;
@@ -83,21 +84,17 @@ export function buildSleepAlarms(
   return alarms;
 }
 
-async function logScheduledAlarms(alarms: SovereignAlarm[]): Promise<void> {
-  const now = Date.now();
-  for (const a of alarms) {
-    if (!a.enabled) continue;
-    const scheduled = new Date();
-    scheduled.setHours(a.hour, a.minute, 0, 0);
-    if (scheduled.getTime() <= now) scheduled.setDate(scheduled.getDate() + 1);
-    await logAlarmScheduled(a.id, a.alarmType, scheduled.getTime());
-  }
+export async function getDefaultSnoozeMinutes(): Promise<number> {
+  const raw = await AsyncStorage.getItem(SNOOZE_KEY);
+  const n = raw ? parseInt(raw, 10) : 9;
+  return SNOOZE_OPTIONS.includes(n as (typeof SNOOZE_OPTIONS)[number]) ? n : 9;
 }
 
 export function useAlarms(profile: Profile) {
   const [alarms, setAlarms] = useState<SovereignAlarm[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [notif, setNotif] = useState<NotifSettings>(DEFAULT_NOTIF);
+  const [snoozeMinutes, setSnoozeMinutes] = useState(9);
 
   useEffect(() => {
     AsyncStorage.getItem(storageKey(profile)).then((raw) => {
@@ -119,6 +116,7 @@ export function useAlarms(profile: Profile) {
         }
       }
     });
+    void getDefaultSnoozeMinutes().then(setSnoozeMinutes);
   }, [profile]);
 
   const persist = useCallback(
@@ -127,8 +125,7 @@ export function useAlarms(profile: Profile) {
       await AsyncStorage.setItem(storageKey(profile), JSON.stringify(next));
       const perms = await checkAlarmPermissions();
       if (!perms.allGranted) return;
-      await rescheduleNativeAlarms(next);
-      await logScheduledAlarms(next);
+      await rescheduleAllAlarms(next);
     },
     [profile]
   );
@@ -168,8 +165,12 @@ export function useAlarms(profile: Profile) {
 
       extended.push(...buildGroqPlannerAlarms(profile, shiftSchedule));
       extended.push(...custom);
-      await persist(extended);
-      return extended;
+      const snooze = await getDefaultSnoozeMinutes();
+      const withSnooze = extended.map((a) =>
+        a.alarmType === 'custom' ? a : { ...a, snoozeMinutes: snooze }
+      );
+      await persist(withSnooze);
+      return withSnooze;
     },
     [alarms, notif, persist, profile]
   );
@@ -196,15 +197,44 @@ export function useAlarms(profile: Profile) {
     [alarms, persist]
   );
 
+  const addCustomAlarm = useCallback(
+    async (hour: number, minute: number, label: string) => {
+      const snooze = await getDefaultSnoozeMinutes();
+      const alarm: SovereignAlarm = {
+        id: `${profile}-custom-${Date.now()}`,
+        label,
+        hour,
+        minute,
+        days: [1, 2, 3, 4, 5, 6, 7],
+        vibrate: true,
+        snoozeMinutes: snooze,
+        alarmType: 'custom',
+        enabled: true,
+      };
+      await persist([...alarms, alarm]);
+    },
+    [alarms, persist, profile]
+  );
+
+  const setDefaultSnooze = useCallback(async (minutes: number) => {
+    await AsyncStorage.setItem(SNOOZE_KEY, String(minutes));
+    setSnoozeMinutes(minutes);
+    const next = alarms.map((a) => ({ ...a, snoozeMinutes: minutes }));
+    await persist(next);
+  }, [alarms, persist]);
+
   return {
     alarms,
     loaded,
     notif,
+    snoozeMinutes,
     syncFromSleepWindow,
     syncAllAlarms,
     saveNotifSettings,
     toggleAlarm,
     removeAlarm,
+    addCustomAlarm,
+    setDefaultSnooze,
     persist,
   };
 }

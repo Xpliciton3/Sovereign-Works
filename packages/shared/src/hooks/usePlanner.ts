@@ -5,6 +5,7 @@ import { getTodayPlanDay } from '../utils/todayPlan';
 import type { SleepWindow } from '../utils/sleepWindow';
 import type { ShiftType } from './useSchedule';
 import type { DailySchedule } from '../ai/groqShiftPlanner';
+import { isPlannerTimeLate } from '../utils/plannerTime';
 import {
   IMPERIUM_DECLARATION,
   IMPERIUM_DECLARATION_INSTRUCTION,
@@ -27,6 +28,7 @@ export interface PlannerItem {
   color: string;
   expandText?: string;
   mealName?: string;
+  isLate?: boolean;
 }
 
 function todayKey(): string {
@@ -182,7 +184,10 @@ export function buildPlannerItems(
       expandText: sleepWindow.note,
     });
   }
-  return items;
+  return items.map((it) => ({
+    ...it,
+    isLate: isPlannerTimeLate(it.time),
+  }));
 }
 
 export function usePlanner(profile: Profile) {

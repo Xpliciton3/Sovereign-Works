@@ -5,6 +5,7 @@ import { getTodayPlanDay } from '../utils/todayPlan';
 import type { SleepWindow } from '../utils/sleepWindow';
 import type { ShiftType } from '../hooks/useSchedule';
 import { generateShiftPlan, type DailySchedule } from '../ai/groqShiftPlanner';
+import { getDatabase } from '../sqlite/db';
 
 const KEY_PREFIX = 'planner_schedule_';
 
@@ -22,8 +23,23 @@ export function useShiftPlanner(profile: Profile, shiftType: ShiftType, isWorkDa
     AsyncStorage.getItem(key).then(async (raw) => {
       if (raw) {
         try {
-          setSchedule(JSON.parse(raw) as DailySchedule);
+          const cached = JSON.parse(raw) as DailySchedule;
+          setSchedule(cached);
           setLoaded(true);
+          try {
+            const db = await getDatabase();
+            await db.runAsync(
+              `INSERT OR REPLACE INTO planner_schedule (date, shift_type, schedule_json, generated_at, source)
+               VALUES (?, ?, ?, ?, ?)`,
+              date,
+              shiftType,
+              raw,
+              Date.now(),
+              'cache'
+            );
+          } catch {
+            // ignore
+          }
           return;
         } catch {
           // regenerate
@@ -44,6 +60,20 @@ export function useShiftPlanner(profile: Profile, shiftType: ShiftType, isWorkDa
       });
       setSchedule(generated);
       await AsyncStorage.setItem(key, JSON.stringify(generated));
+      try {
+        const db = await getDatabase();
+        await db.runAsync(
+          `INSERT OR REPLACE INTO planner_schedule (date, shift_type, schedule_json, generated_at, source)
+           VALUES (?, ?, ?, ?, ?)`,
+          date,
+          shift,
+          JSON.stringify(generated),
+          Date.now(),
+          process.env.EXPO_PUBLIC_GROQ_API_KEY ? 'groq' : 'fallback'
+        );
+      } catch {
+        // SQLite optional until db init
+      }
       setLoaded(true);
     });
   }, [profile, shiftType, isWorkDay, wakeTime]);

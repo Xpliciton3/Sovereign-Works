@@ -1,7 +1,9 @@
 node_modules/
 .expo/
+.expo-smoke/
 dist/
 build/
+**/android/**/build/
 *.apk
 .env
 .env.local
@@ -10,3 +12,4 @@ build/
 android/
 ios/
 .gradle/
+_incoming_*/

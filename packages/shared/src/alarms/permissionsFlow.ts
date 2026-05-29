@@ -27,6 +27,8 @@ export async function checkAlarmPermissions(): Promise<PermissionStatus> {
 }
 
 export const PERMISSION_COPY = {
+  intro:
+    'Sovereign Works needs exact alarms, display over other apps, and notifications so wake alarms fire on time and appear on the lock screen.',
   exactAlarm:
     'Exact alarms are required for the wake alarm to fire at the correct time. Android restricts this permission — you must grant it manually.',
   overlay: 'Draw over other apps is required for the alarm to appear over the lock screen.',

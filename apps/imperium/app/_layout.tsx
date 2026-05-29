@@ -1,10 +1,15 @@
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useAppVersionTourReset } from '@sovereign/shared';
+import {
+  Layer3Boot,
+  useAppVersionTourReset,
+  useSovereignFonts,
+  getThemeColors,
+} from '@sovereign/shared';
+import { PROFILE } from '@/constants/profile';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -12,7 +17,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useAppVersionTourReset();
-  const [loaded, error] = useFonts({
+  const colors = getThemeColors(PROFILE, 'dark');
+  const [loaded, error] = useSovereignFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
@@ -29,11 +35,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(tabs)" />
-        </Stack>
+        <Layer3Boot colors={colors}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </Layer3Boot>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -104,7 +104,12 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
                 <View style={styles.itemBody}>
                   <Text style={{ color: colors.text, fontSize: 14 }}>{item.label}</Text>
                   {item.sub && <Text style={{ color: colors.textMuted, fontSize: 11 }}>{item.sub}</Text>}
-                  <Text style={{ color: colors.textDisabled, fontSize: 10 }}>{item.time}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ color: colors.textDisabled, fontSize: 10 }}>{item.time}</Text>
+                    {item.isLate && !done[item.id] && (
+                      <Text style={{ color: '#e05828', fontSize: 9, letterSpacing: 1 }}>LATE</Text>
+                    )}
+                  </View>
                 </View>
                 {item.id === 'bed' ? (
                   <Pressable onPress={() => setPlanTab('alarms')} style={[styles.alarmBtnInline, { borderColor: '#4a6a9a' }]}>

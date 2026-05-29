@@ -87,7 +87,13 @@ export async function generateShiftPlan(input: ShiftPlannerInput): Promise<Daily
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: 'Return only valid JSON for a shift-aware daily schedule.' },
+          {
+            role: 'system',
+            content: `You are a shift-aware daily planner for the ${input.tradition} tradition app.
+Return ONLY valid JSON matching DailySchedule: date, shiftType, activeWindowStart, activeWindowEnd, sleepWindowStart, sleepWindowEnd, scheduledItems[{id,label,time,alarm}], hydrationReminders (24h HH:MM strings), groqNote.
+Respect wakeTime ${input.wakeTime}, shift ${input.shiftType}, meals ${JSON.stringify(input.mealPlanToday)}.
+Place decl/b/hyd/l/mid/d/inv at sensible times inside the active window. Mark alarm:true for wake-critical items.`,
+          },
           { role: 'user', content: JSON.stringify(input) },
         ],
         max_tokens: 800,

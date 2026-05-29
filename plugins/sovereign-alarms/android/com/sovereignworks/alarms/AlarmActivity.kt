@@ -19,6 +19,12 @@ class AlarmActivity : Activity() {
   private var confirming = false
   private var timer: CountDownTimer? = null
 
+  private fun traditionFromId(id: String): String =
+    if (id.startsWith("tending")) "tending" else "imperium"
+
+  private fun accentColor(tradition: String): Int =
+    if (tradition == "tending") Color.parseColor("#c47878") else Color.parseColor("#c9a84c")
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     window.addFlags(
@@ -33,37 +39,50 @@ class AlarmActivity : Activity() {
     confirming = false
     timer?.cancel()
     val label = intent.getStringExtra(AlarmReceiver.EXTRA_LABEL) ?: "Alarm"
+    val id = intent.getStringExtra(AlarmReceiver.EXTRA_ID) ?: "alarm"
+    val tradition = traditionFromId(id)
+    val gold = accentColor(tradition)
     val root = LinearLayout(this).apply {
       orientation = LinearLayout.VERTICAL
       gravity = Gravity.CENTER
       setBackgroundColor(Color.parseColor("#0D0D0D"))
       setPadding(48, 48, 48, 48)
     }
+    val sigil = TextView(this).apply {
+      text = if (tradition == "tending") "◈" else "⬡"
+      textSize = 28f
+      setTextColor(gold)
+      gravity = Gravity.CENTER
+    }
     val time = TextView(this).apply {
       text = SimpleDateFormat("h:mm a", Locale.US).format(Date())
       textSize = 42f
-      setTextColor(Color.parseColor("#c9a84c"))
+      setTextColor(gold)
       gravity = Gravity.CENTER
+      setTypeface(Typeface.create("serif", Typeface.NORMAL))
     }
     val title = TextView(this).apply {
       text = label
-      textSize = 20f
-      setTypeface(typeface, Typeface.ITALIC)
+      textSize = 22f
+      setTypeface(Typeface.create("serif", Typeface.ITALIC))
       setTextColor(Color.parseColor("#f0f0f0"))
       gravity = Gravity.CENTER
     }
+    val snoozeMin = intent.getIntExtra(AlarmReceiver.EXTRA_SNOOZE, 9)
     val snooze = Button(this).apply {
-      text = "SNOOZE"
-      setTextColor(Color.parseColor("#c9a84c"))
+      text = "SNOOZE · ${snoozeMin}m"
+      setTextColor(gold)
       setBackgroundColor(Color.TRANSPARENT)
       setOnClickListener { onSnooze() }
     }
     val awake = Button(this).apply {
       text = "AWAKE"
       setTextColor(Color.BLACK)
-      setBackgroundColor(Color.parseColor("#c9a84c"))
-      setOnClickListener { showConfirmScreen(label) }
+      setBackgroundColor(gold)
+      setOnClickListener { showConfirmScreen(label, tradition, snoozeMin) }
     }
+    root.addView(sigil)
+    root.addView(space(12))
     root.addView(time)
     root.addView(space(24))
     root.addView(title)
@@ -74,8 +93,9 @@ class AlarmActivity : Activity() {
     setContentView(root)
   }
 
-  private fun showConfirmScreen(label: String) {
+  private fun showConfirmScreen(label: String, tradition: String, snoozeMin: Int) {
     confirming = true
+    val gold = accentColor(tradition)
     val root = LinearLayout(this).apply {
       orientation = LinearLayout.VERTICAL
       gravity = Gravity.CENTER
@@ -85,6 +105,7 @@ class AlarmActivity : Activity() {
     val question = TextView(this).apply {
       text = "Are you actually awake?"
       textSize = 22f
+      setTypeface(Typeface.create("serif", Typeface.NORMAL))
       setTextColor(Color.parseColor("#f0f0f0"))
       gravity = Gravity.CENTER
     }
@@ -98,7 +119,7 @@ class AlarmActivity : Activity() {
     val yes = Button(this).apply {
       text = "Yes — I'm up"
       setTextColor(Color.BLACK)
-      setBackgroundColor(Color.parseColor("#c9a84c"))
+      setBackgroundColor(gold)
       setOnClickListener {
         val id = intent.getStringExtra(AlarmReceiver.EXTRA_ID) ?: "alarm"
         AlarmScheduler.appendLog(this@AlarmActivity, id, "awake")
@@ -111,8 +132,8 @@ class AlarmActivity : Activity() {
       }
     }
     val no = Button(this).apply {
-      text = "No — 9 more minutes"
-      setTextColor(Color.parseColor("#c9a84c"))
+      text = "No — $snoozeMin more minutes"
+      setTextColor(gold)
       setBackgroundColor(Color.TRANSPARENT)
       setOnClickListener { onSnooze() }
     }
@@ -148,7 +169,10 @@ class AlarmActivity : Activity() {
 
   private fun space(dp: Int): View {
     val v = View(this)
-    v.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (dp * resources.displayMetrics.density).toInt())
+    v.layoutParams = LinearLayout.LayoutParams(
+      LinearLayout.LayoutParams.MATCH_PARENT,
+      (dp * resources.displayMetrics.density).toInt(),
+    )
     return v
   }
 

@@ -76,6 +76,27 @@ class SovereignAlarmModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  fun getPendingAlarmLog(promise: Promise) {
+    try {
+      val ctx = reactApplicationContext.applicationContext
+      promise.resolve(AlarmScheduler.getPendingLog(ctx))
+    } catch (e: Exception) {
+      promise.reject("ALARM_LOG_READ", e)
+    }
+  }
+
+  @ReactMethod
+  fun clearPendingAlarmLog(promise: Promise) {
+    try {
+      val ctx = reactApplicationContext.applicationContext
+      AlarmScheduler.clearPendingLog(ctx)
+      promise.resolve(null)
+    } catch (e: Exception) {
+      promise.reject("ALARM_LOG_CLEAR", e)
+    }
+  }
+
+  @ReactMethod
   fun requestOverlayPermission(promise: Promise) {
     try {
       val activity = reactApplicationContext.currentActivity ?: run {
