@@ -38,7 +38,20 @@ export function useHydration(profile: Profile) {
     [loggedOz, persist, targetOz]
   );
 
+  const removeOz = useCallback(
+    async (amount: number) => {
+      const next = Math.max(0, loggedOz - amount);
+      await persist(next);
+      return next;
+    },
+    [loggedOz, persist]
+  );
+
+  const resetToday = useCallback(async () => {
+    await persist(0);
+  }, [persist]);
+
   const percent = Math.min(100, Math.round((loggedOz / targetOz) * 100));
 
-  return { loggedOz, targetOz, percent, addOz, setLoggedOz: persist };
+  return { loggedOz, targetOz, percent, addOz, removeOz, resetToday, setLoggedOz: persist };
 }

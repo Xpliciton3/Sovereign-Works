@@ -3,4 +3,4 @@ import { IMPERIUM_PROFILE } from '@sovereign/shared';
 export const PROFILE = 'imperium' as const;
 export const profileConfig = IMPERIUM_PROFILE;
 export const TENDING_APK_URL =
-  'https://github.com/Xpliciton3/Sovereign-Works/releases/download/v1.0.10/sovereign-tending-v1.0.10.apk';
+  'https://github.com/Xpliciton3/Sovereign-Works/releases/download/v1.0.11/sovereign-tending-v1.0.11.apk';

@@ -57,7 +57,6 @@ export function buildHydrationFromTimes(
   for (let i = 0; i < times.length; i += 1) {
     const parsed = parseTime24(times[i]);
     if (!parsed) continue;
-    if (parsed.hour < HYDRATION_START || parsed.hour >= HYDRATION_END) continue;
     alarms.push({
       id: `${profile}-hydration-${i}`,
       label: labels.hydration,

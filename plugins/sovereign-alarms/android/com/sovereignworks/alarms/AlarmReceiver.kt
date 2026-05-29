@@ -17,6 +17,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val snooze = intent.getIntExtra(EXTRA_SNOOZE, 9)
         val hour = intent.getIntExtra(EXTRA_HOUR, 6)
         val minute = intent.getIntExtra(EXTRA_MINUTE, 0)
+        AlarmScheduler.appendLog(context.applicationContext, id, "fired")
         val launch = Intent(context, AlarmActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
           putExtra(EXTRA_LABEL, label)
@@ -37,5 +38,6 @@ class AlarmReceiver : BroadcastReceiver() {
     const val EXTRA_SNOOZE = "snooze_minutes"
     const val EXTRA_HOUR = "alarm_hour"
     const val EXTRA_MINUTE = "alarm_minute"
+    const val EXTRA_FROM_DISMISS = "from_dismiss"
   }
 }

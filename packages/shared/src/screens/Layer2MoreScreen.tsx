@@ -110,7 +110,7 @@ export function Layer2MoreScreen({ profile, colors }: Props) {
       )}
 
       <Text style={{ color: colors.textDisabled, fontSize: 10, marginTop: 20 }}>
-        v1.0.10 · Layer 3 complete
+        v1.0.11 · Layer 3 fixes (pre–Layer 4)
       </Text>
     </ScrollView>
   );

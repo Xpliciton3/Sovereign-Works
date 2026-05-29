@@ -99,7 +99,16 @@ class AlarmActivity : Activity() {
       text = "Yes — I'm up"
       setTextColor(Color.BLACK)
       setBackgroundColor(Color.parseColor("#c9a84c"))
-      setOnClickListener { finishAndRemoveTask() }
+      setOnClickListener {
+        val id = intent.getStringExtra(AlarmReceiver.EXTRA_ID) ?: "alarm"
+        AlarmScheduler.appendLog(this@AlarmActivity, id, "awake")
+        val hour = intent.getIntExtra(AlarmReceiver.EXTRA_HOUR, 6)
+        val minute = intent.getIntExtra(AlarmReceiver.EXTRA_MINUTE, 0)
+        val label = intent.getStringExtra(AlarmReceiver.EXTRA_LABEL) ?: "Alarm"
+        val snooze = intent.getIntExtra(AlarmReceiver.EXTRA_SNOOZE, 9)
+        AlarmScheduler.rescheduleAfterDismiss(this@AlarmActivity, id, hour, minute, label, snooze)
+        finishAndRemoveTask()
+      }
     }
     val no = Button(this).apply {
       text = "No — 9 more minutes"
@@ -132,6 +141,7 @@ class AlarmActivity : Activity() {
     val snooze = intent.getIntExtra(AlarmReceiver.EXTRA_SNOOZE, 9)
     val hour = intent.getIntExtra(AlarmReceiver.EXTRA_HOUR, 6)
     val minute = intent.getIntExtra(AlarmReceiver.EXTRA_MINUTE, 0)
+    AlarmScheduler.appendLog(this, id, "snooze")
     AlarmScheduler.scheduleSnooze(this, id, label, snooze, hour, minute)
     finishAndRemoveTask()
   }

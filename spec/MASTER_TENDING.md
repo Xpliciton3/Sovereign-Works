@@ -1065,3 +1065,25 @@ Your Ti — The Question and your partner's Te are the functions closest in arch
 ***Unspent. Unbowed. Given Freely. Inexhaustible.***
 
 *The Unspent Seal · The Tending*
+
+---
+
+## THE MORNING HEARTENING BLEND
+
+*Nen-vel sol — the warmth becoming full*
+
+**Purpose:** To sustain the capacity for genuine warmth before the relational field makes its first claim on the day. The Unspent does not need to be sharpened in the morning. The Unspent needs to be filled.
+
+**Ingredients and why:**
+- **Rose petals** (dried, food-grade) — The heart herb. Used across Ayurvedic, Persian, and European traditions for grief, heartache, and emotional resilience. Soothing to the nervous system. Associated in research with mood elevation. *Source: Mountain Rose Herbs, food-grade only.*
+- **Lemon balm / Melissa officinalis** — Clinically studied GABA-modulating anxiolytic that reduces stress without sedation. The Fe dominant that runs hot from sustained emotional engagement benefits directly from lemon balm's calming effect without dampening the warmth.
+- **Rhodiola rosea** — Adaptogen with strong research support for fatigue resistance and emotional resilience under sustained demand. Not stimulating — sustaining. 
+- **Green or white tea** — Gentler caffeine than black tea, with natural L-theanine. Appropriate for a nervous system that does not need aggressive stimulation but needs to be awake and present.
+
+**Proportions per cup:** 1 tsp rose petals + 1 tsp lemon balm + ½ tsp rhodiola (powder or extract) + 1 tsp green or white tea.
+
+**Preparation:** Water to full boil, cool to 185°F (85°C). Steep covered 4–5 minutes. Strain. Honey is permitted and appropriate — rose and honey have a long documented pairing.
+
+**When used:** Morning, before speaking to anyone, as the first act of the day. The cup is held with both hands. No phone. No tasks. This is the filling before the giving begins.
+
+*This is the third tea of The Tending. The full set: Morning Heartening Blend (morning, daily), Replenishment Blend (recovery, post-output), Rite Preparation Blend (threshold, before the Rite). Each has a specific function. None are interchangeable.*

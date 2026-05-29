@@ -6,21 +6,34 @@ import { getProfileConfig } from '../profiles';
 import { getTodayQuote } from '../data/quotes';
 import { useHydration } from '../hooks/useHydration';
 import { useSchedule } from '../hooks/useSchedule';
+import { useShiftPlanner } from '../hooks/useShiftPlanner';
+import { SvgIcon } from '../ui/SvgIcon';
 import { MoodModal } from './MoodModal';
 
 type Props = {
   profile: Profile;
   colors: ThemeColors;
   householdId: string | null;
+  onOpenHolyDays?: () => void;
 };
 
-export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
+export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays }: Props) {
   const pc = getProfileConfig(profile);
   const quote = getTodayQuote(profile);
-  const { loggedOz, targetOz, percent, addOz } = useHydration(profile);
-  const { sleepWindow, overtimeHours, shiftLabel, setOvertime, cancelOvertime } = useSchedule();
+  const { loggedOz, targetOz, percent, addOz, removeOz, resetToday } = useHydration(profile);
+  const {
+    sleepWindow,
+    overtimeHours,
+    shiftLabel,
+    setOvertime,
+    cancelOvertime,
+    shiftType,
+    isWorkDay,
+  } = useSchedule();
+  const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
   const [showMood, setShowMood] = useState(false);
   const [hub, setHub] = useState<'mind' | 'body' | 'soul' | null>(null);
+  const imp = profile === 'imperium';
 
   return (
     <>
@@ -30,12 +43,11 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
 
         <View style={[styles.shiftRow, { borderColor: colors.border }]}>
           <Text style={[styles.shift, { color: '#44aa44' }]}>{shiftLabel}</Text>
-          <Text style={[styles.shiftPartner, { color: '#c47878' }]}>
-            Partner: {pc.partnerName}
-          </Text>
+          <Text style={[styles.shiftPartner, { color: '#c47878' }]}>Partner: {pc.partnerName}</Text>
         </View>
         <Text style={[styles.sleepLine, { color: colors.textMuted }]}>
           WAKE {sleepWindow.wake} · SLEEP {sleepWindow.sleep}
+          {schedule ? ` · Active ${schedule.activeWindowStart}–${schedule.activeWindowEnd}` : ''}
         </Text>
         <View style={styles.quickRow}>
           {[1, 2, 4].map((h) => (
@@ -57,23 +69,36 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
         <View style={styles.hubRow}>
           {(
             [
-              ['mind', 'Mind', '#9060f0'],
-              ['body', 'Body', '#18c48a'],
-              ['soul', 'Soul', colors.accent],
+              ['mind', 'Mind', '#9060f0', 'brain' as const],
+              ['body', 'Body', '#18c48a', 'drop' as const],
+              ['soul', 'Soul', colors.accent, 'star' as const],
             ] as const
-          ).map(([key, label, col]) => (
+          ).map(([key, label, col, icon]) => (
             <Pressable
               key={key}
               onPress={() => setHub(hub === key ? null : key)}
-              style={[styles.hubTile, { borderColor: colors.border, backgroundColor: colors.surface }]}
+              style={[styles.hubTile, { borderColor: hub === key ? col : colors.border, backgroundColor: colors.surface }]}
             >
+              <SvgIcon name={icon} size={18} color={col} />
               <Text style={{ color: col, fontSize: 12, letterSpacing: 1 }}>{label}</Text>
             </Pressable>
           ))}
         </View>
 
+        {hub === 'mind' && (
+          <View style={[styles.hubPanel, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <Pressable onPress={() => setShowMood(true)} style={[styles.hubAction, { borderColor: '#9060f055' }]}>
+              <SvgIcon name="brain" size={16} color="#9060f0" />
+              <Text style={{ color: '#9060f0', fontSize: 11, letterSpacing: 1 }}>MOOD TRACKER</Text>
+            </Pressable>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>
+              Declaration, doctrine, and shadow work open from Mind in a future layer.
+            </Text>
+          </View>
+        )}
+
         {hub === 'body' && (
-          <View style={[styles.hydCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+          <View style={[styles.hubPanel, { borderColor: colors.border, backgroundColor: colors.surface }]}>
             <Text style={[styles.hydTitle, { color: '#18c48a' }]}>Hydration</Text>
             <Text style={{ color: colors.text, fontSize: 22 }}>{loggedOz} / {targetOz} oz</Text>
             <View style={[styles.hydBar, { backgroundColor: colors.surfaceElevated }]}>
@@ -81,30 +106,34 @@ export function Layer2HomeScreen({ profile, colors, householdId }: Props) {
             </View>
             <View style={styles.hydBtns}>
               {[8, 16, 24].map((oz) => (
-                <Pressable
-                  key={oz}
-                  onPress={() => addOz(oz)}
-                  style={[styles.hydBtn, { borderColor: '#18c48a55' }]}
-                >
+                <Pressable key={`p${oz}`} onPress={() => addOz(oz)} style={[styles.hydBtn, { borderColor: '#18c48a55' }]}>
                   <Text style={{ color: '#18c48a', fontSize: 12 }}>+{oz}</Text>
                 </Pressable>
               ))}
+              <Pressable onPress={() => removeOz(8)} style={[styles.hydBtn, { borderColor: '#18c48a55' }]}>
+                <Text style={{ color: '#18c48a', fontSize: 12 }}>−8</Text>
+              </Pressable>
             </View>
+            <Pressable onPress={() => resetToday()} style={{ marginTop: 8 }}>
+              <Text style={{ color: colors.textMuted, fontSize: 11 }}>Reset Today</Text>
+            </Pressable>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 12 }}>
+              {imp ? "Warrior's Practice" : "Keeper's Practice"} — Layer 5+
+            </Text>
           </View>
         )}
 
-        {hub === 'mind' && (
-          <Text style={[styles.locked, { color: colors.textMuted }]}>Mind hub content is in active build.</Text>
-        )}
         {hub === 'soul' && (
-          <Text style={[styles.locked, { color: colors.textMuted }]}>
-            Holy Days, rites, and partnership — open More → Holy Days for observances.
-          </Text>
+          <View style={[styles.hubPanel, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <Pressable onPress={onOpenHolyDays} style={[styles.hubAction, { borderColor: `${colors.accent}55` }]}>
+              <SvgIcon name="star" size={16} color={colors.accent} />
+              <Text style={{ color: colors.accent, fontSize: 11, letterSpacing: 1 }}>HOLY DAYS</Text>
+            </Pressable>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>
+              Rites, partnership, and evening inventory expand in later layers.
+            </Text>
+          </View>
         )}
-
-        <Pressable onPress={() => setShowMood(true)} style={[styles.moodBtn, { borderColor: '#9060f055' }]}>
-          <Text style={{ color: '#9060f0', fontSize: 11, letterSpacing: 1 }}>LOG MOOD</Text>
-        </Pressable>
 
         <Text style={[styles.axiom, { color: colors.accent }]}>{pc.axiom}</Text>
       </ScrollView>
@@ -128,7 +157,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, letterSpacing: 2, textTransform: 'uppercase' },
   person: { fontSize: 12, marginBottom: 12 },
   shiftRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 12 },
-  shift: { fontSize: 11, letterSpacing: 1 },
+  shift: { fontSize: 11, letterSpacing: 1, flex: 1 },
   shiftPartner: { fontSize: 11 },
   sleepLine: { fontSize: 10, marginBottom: 8 },
   quickRow: { flexDirection: 'row', gap: 6, marginBottom: 10, flexWrap: 'wrap' },
@@ -136,14 +165,13 @@ const styles = StyleSheet.create({
   quoteCard: { borderLeftWidth: 3, borderWidth: 1, borderRadius: 8, padding: 16, marginBottom: 16 },
   quote: { fontSize: 16, fontStyle: 'italic', lineHeight: 24 },
   hubRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  hubTile: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 12, alignItems: 'center', gap: 4 },
-  hydCard: { borderWidth: 1, borderRadius: 8, padding: 16, marginBottom: 12 },
+  hubTile: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 12, alignItems: 'center', gap: 6 },
+  hubPanel: { borderWidth: 1, borderRadius: 8, padding: 14, marginBottom: 12 },
+  hubAction: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 6, padding: 10 },
   hydTitle: { fontSize: 10, letterSpacing: 1, marginBottom: 8 },
   hydBar: { height: 6, borderRadius: 3, marginVertical: 10, overflow: 'hidden' },
   hydFill: { height: '100%' },
-  hydBtns: { flexDirection: 'row', gap: 8 },
-  hydBtn: { flex: 1, padding: 10, borderWidth: 1, borderRadius: 6, alignItems: 'center' },
-  locked: { fontSize: 12, marginBottom: 12, fontStyle: 'italic' },
-  moodBtn: { borderWidth: 1, borderRadius: 6, padding: 12, alignItems: 'center', marginBottom: 16 },
+  hydBtns: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  hydBtn: { flex: 1, minWidth: 56, padding: 10, borderWidth: 1, borderRadius: 6, alignItems: 'center' },
   axiom: { fontSize: 13, letterSpacing: 1, lineHeight: 20, textAlign: 'center' },
 });

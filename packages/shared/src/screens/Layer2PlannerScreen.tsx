@@ -37,6 +37,10 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
     setShiftType,
     anchorDate,
     setAnchorDate,
+    scheduleType,
+    setScheduleType,
+    shiftStart,
+    shiftEnd,
   } = useSchedule();
   const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
   const { done, toggleDone } = usePlanner(profile);
@@ -102,7 +106,13 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
                   {item.sub && <Text style={{ color: colors.textMuted, fontSize: 11 }}>{item.sub}</Text>}
                   <Text style={{ color: colors.textDisabled, fontSize: 10 }}>{item.time}</Text>
                 </View>
-                <View style={[styles.dot, { backgroundColor: item.color }]} />
+                {item.id === 'bed' ? (
+                  <Pressable onPress={() => setPlanTab('alarms')} style={[styles.alarmBtnInline, { borderColor: '#4a6a9a' }]}>
+                    <Text style={{ color: '#5a80b0', fontSize: 9, letterSpacing: 0.5 }}>SET ALARM</Text>
+                  </Pressable>
+                ) : (
+                  <View style={[styles.dot, { backgroundColor: item.color }]} />
+                )}
               </Pressable>
               {isOpen && (
                 <View style={[styles.expand, { borderTopColor: colors.border }]}>
@@ -122,14 +132,6 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
                     <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
                       {item.expandText ?? ''}
                     </Text>
-                  )}
-                  {item.id === 'bed' && (
-                    <Pressable
-                      onPress={() => setPlanTab('alarms')}
-                      style={[styles.alarmBtn, { borderColor: '#4a6a9a' }]}
-                    >
-                      <Text style={{ color: '#5a80b0', fontSize: 10, letterSpacing: 0.5 }}>SET ALARM</Text>
-                    </Pressable>
                   )}
                 </View>
               )}
@@ -170,18 +172,24 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
       )}
       {planTab === 'schedule' && (
         <View style={[styles.stubCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-          <Text style={{ color: colors.text, marginBottom: 8 }}>Shift Type</Text>
+          <Text style={{ color: colors.text, marginBottom: 8 }}>Rotation pattern</Text>
+          <View style={styles.otRow}>
+            {(['223', '410', '312', '247'] as const).map((pat) => (
+              <Pressable key={pat} onPress={() => setScheduleType(pat)} style={[styles.otBtn, { borderColor: colors.border }]}>
+                <Text style={{ color: scheduleType === pat ? p.cPlan : colors.textMuted, fontSize: 11 }}>{pat}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={{ color: colors.text, marginTop: 12, marginBottom: 8 }}>Shift kind</Text>
           <View style={styles.otRow}>
             <Pressable onPress={() => setShiftType('day')} style={[styles.otBtn, { borderColor: colors.border }]}>
-              <Text style={{ color: shiftType === 'day' ? p.cPlan : colors.textMuted }}>Day 6A–6P</Text>
+              <Text style={{ color: shiftType === 'day' ? p.cPlan : colors.textMuted }}>Day {shiftStart}–{shiftEnd}</Text>
             </Pressable>
             <Pressable onPress={() => setShiftType('night')} style={[styles.otBtn, { borderColor: colors.border }]}>
-              <Text style={{ color: shiftType === 'night' ? p.cPlan : colors.textMuted }}>Night 6P–6A</Text>
+              <Text style={{ color: shiftType === 'night' ? p.cPlan : colors.textMuted }}>Night {shiftStart}–{shiftEnd}</Text>
             </Pressable>
           </View>
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>
-            Pattern Start Date (YYYY-MM-DD)
-          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>Pattern anchor date</Text>
           <View style={styles.otRow}>
             {['2024-01-01', '2024-01-08', '2024-01-15'].map((d) => (
               <Pressable key={d} onPress={() => setAnchorDate(d)} style={[styles.otBtn, { borderColor: colors.border }]}>
@@ -217,6 +225,7 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, marginTop: 4 },
   expand: { borderTopWidth: StyleSheet.hairlineWidth, padding: 12 },
   alarmBtn: { marginTop: 10, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderRadius: 4 },
+  alarmBtnInline: { paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderRadius: 4 },
   declCard: { borderLeftWidth: 3, borderWidth: 1, borderRadius: 8, padding: 16, marginTop: 8 },
   stubCard: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 12 },
   otRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
