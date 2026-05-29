@@ -15,10 +15,10 @@ type Props = {
 
 export function MoodModal({ visible, onClose, profile, colors, householdId }: Props) {
   const [tab, setTab] = useState<'log' | 'partner' | 'history'>('log');
-  const [showSendActions, setShowSendActions] = useState(false);
   const mood = useMood(profile, householdId);
   const pc = getProfileConfig(profile);
   const mindColor = profile === 'imperium' ? '#9060f0' : '#9878b0';
+  const partnerDotColor = profile === 'imperium' ? '#c47878' : '#c9a84c';
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -43,7 +43,7 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
             {tab === 'log' && (
               <>
                 <Text style={[styles.privacy, { color: colors.textMuted }]}>
-                  Your notes are private. Only your score and a translated reflection are shared with your partner.
+                  Your notes stay on this device. Only your dot score syncs to your partner.
                 </Text>
                 <View style={styles.scoreRow}>
                   {[1, 2, 3, 4, 5].map((n) => (
@@ -71,10 +71,14 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                   multiline
                   style={[styles.note, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 />
-                <Text style={[styles.transHdr, { color: mindColor }]}>Partner sees:</Text>
-                <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
-                  {mood.previewTranslation || 'Save entry to generate translation preview.'}
-                </Text>
+                {mood.note.trim().length > 0 && (
+                  <>
+                    <Text style={[styles.transHdr, { color: mindColor }]}>Local reflection (device only):</Text>
+                    <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 20 }}>
+                      {mood.previewTranslation || 'Tap save to generate a local reflection.'}
+                    </Text>
+                  </>
+                )}
                 <View style={styles.dots}>
                   {[1, 2, 3, 4, 5].map((d) => (
                     <View
@@ -92,57 +96,20 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                 </View>
                 <Pressable
                   onPress={async () => {
+                    if (mood.note.trim()) await mood.generatePreview();
                     await mood.saveLocalMood();
-                    if (mood.note.trim().length > 0 && householdId) {
-                      await mood.generatePreview();
-                      setShowSendActions(true);
-                      return;
-                    }
-                    mood.clearPreview();
                     onClose();
                   }}
                   style={[styles.submit, { backgroundColor: mindColor }]}
                 >
-                  <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 1 }}>
-                    {mood.note.trim().length > 0 && householdId ? 'SAVE + PREVIEW' : 'SAVE ENTRY'}
-                  </Text>
+                  <Text style={{ color: '#fff', fontSize: 12, letterSpacing: 1 }}>SAVE ENTRY</Text>
                 </Pressable>
-                {mood.isTranslating && (
-                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 10 }}>
-                    Translating reflection...
-                  </Text>
-                )}
-                {showSendActions && mood.previewTranslation.length > 0 && (
-                  <View style={styles.actions}>
-                    <Pressable
-                      onPress={async () => {
-                        await mood.sendPreviewToPartner();
-                        mood.clearPreview();
-                        setShowSendActions(false);
-                        onClose();
-                      }}
-                      style={[styles.actionBtn, { borderColor: mindColor }]}
-                    >
-                      <Text style={{ color: mindColor, fontSize: 11, letterSpacing: 1 }}>SEND TO PARTNER</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => {
-                        mood.clearPreview();
-                        setShowSendActions(false);
-                        onClose();
-                      }}
-                      style={[styles.actionBtn, { borderColor: colors.border }]}
-                    >
-                      <Text style={{ color: colors.textMuted, fontSize: 11, letterSpacing: 1 }}>KEEP PRIVATE</Text>
-                    </Pressable>
-                  </View>
-                )}
               </>
             )}
             {tab === 'partner' && (
               <View style={{ paddingVertical: 16 }}>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 12 }}>
-                  {pc.partnerName}&apos;s translated mood today
+                  {pc.partnerName}&apos;s mood today
                 </Text>
                 <View style={styles.dots}>
                   {[1, 2, 3, 4, 5].map((d) => (
@@ -153,19 +120,18 @@ export function MoodModal({ visible, onClose, profile, colors, householdId }: Pr
                         height: 14,
                         borderRadius: 7,
                         backgroundColor:
-                          mood.partnerDot !== null && d <= mood.partnerDot ? '#18c48a' : colors.surface,
+                          mood.partnerDot !== null && d <= mood.partnerDot ? partnerDotColor : colors.surface,
                         borderWidth: 1,
                         borderColor: colors.border,
                       }}
                     />
                   ))}
                 </View>
-                {mood.partnerDot === null && (
+                {mood.partnerDot === null ? (
                   <Text style={{ color: colors.textDisabled, fontSize: 12, marginTop: 12 }}>
-                    No partner mood logged yet today.
+                    No reading yet today.
                   </Text>
-                )}
-                {mood.partnerTranslation ? (
+                ) : mood.partnerTranslation ? (
                   <Text style={{ color: colors.text, fontSize: 13, lineHeight: 20, marginTop: 8 }}>
                     {mood.partnerTranslation}
                   </Text>
@@ -210,7 +176,5 @@ const styles = StyleSheet.create({
   transHdr: { fontSize: 10, letterSpacing: 1, marginBottom: 6 },
   dots: { flexDirection: 'row', gap: 6, marginVertical: 12 },
   submit: { padding: 14, borderRadius: 6, alignItems: 'center', marginTop: 8 },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  actionBtn: { flex: 1, borderWidth: 1, borderRadius: 6, padding: 10, alignItems: 'center' },
   histRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 100, paddingVertical: 16 },
 });

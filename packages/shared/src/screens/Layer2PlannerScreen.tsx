@@ -12,6 +12,8 @@ import { useCart } from '../hooks/useCart';
 import { RECIPES } from '../data/recipes';
 import { holyDayOnDate } from '../data/holyDays';
 import { useDietary } from '../hooks/useDietary';
+import { useHouseholdContext } from '../context/HouseholdContext';
+import { SyncStatusDot } from '../ui/SyncStatusDot';
 
 const PALETTE = {
   imperium: { gold: '#c9a84c', cNour: '#e05828', cMind: '#9060f0', cBody: '#18c48a', cSoul: '#c9a84c', cPlan: '#c9a84c' },
@@ -24,6 +26,7 @@ type Props = {
 };
 
 export function Layer2PlannerScreen({ profile, colors }: Props) {
+  const hh = useHouseholdContext();
   const [planTab, setPlanTab] = useState<'today' | 'calendar' | 'alarms' | 'reminders' | 'schedule'>('today');
   const [openId, setOpenId] = useState<string | null>(null);
   const {
@@ -43,8 +46,8 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
     shiftEnd,
   } = useSchedule();
   const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
-  const { done, toggleDone } = usePlanner(profile);
-  const { addIngredient, addAllIngredients } = useCart();
+  const { done, toggleDone } = usePlanner(profile, hh.householdId);
+  const { addIngredient, addAllIngredients } = useCart(profile, hh.householdId);
   const { diet } = useDietary();
   const p = PALETTE[profile];
   const items = buildPlannerItems(profile, p, sleepWindow, shiftType, isWorkDay, schedule);
@@ -63,11 +66,14 @@ export function Layer2PlannerScreen({ profile, colors }: Props) {
         ))}
       </View>
       <View style={[styles.shiftStrip, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-        <Text style={[styles.shiftText, { color: colors.textMuted }]}>
-          {shiftLabel}
-          {overtimeHours > 0 ? ` · OT +${overtimeHours}h` : ''}
-          {schedule ? ` · Active ${schedule.activeWindowStart}–${schedule.activeWindowEnd}` : ''}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+          <SyncStatusDot status={hh.syncStatus} colors={colors} onRetry={() => void hh.retrySync()} size={7} />
+          <Text style={[styles.shiftText, { color: colors.textMuted, flex: 1 }]}>
+            {shiftLabel}
+            {overtimeHours > 0 ? ` · OT +${overtimeHours}h` : ''}
+            {schedule ? ` · Active ${schedule.activeWindowStart}–${schedule.activeWindowEnd}` : ''}
+          </Text>
+        </View>
       </View>
       {sleepWindow && (
         <View style={[styles.sleepCard, { borderColor: '#4a6a9a', backgroundColor: colors.surface }]}>

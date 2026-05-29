@@ -10,3 +10,5 @@ export { AlarmPermissionsOnboarding } from './AlarmPermissionsOnboarding';
 export { AddAlarmModal } from './AddAlarmModal';
 export { HolyDaysScreen } from './HolyDaysScreen';
 export { HouseholdCreatedPanel, type HouseholdCreatedPayload } from './HouseholdCreatedPanel';
+export { PartnerCard } from './PartnerCard';
+export { HouseholdSettingsPanel } from './HouseholdSettingsPanel';

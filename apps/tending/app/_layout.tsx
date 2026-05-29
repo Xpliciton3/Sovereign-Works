@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
+  HouseholdProvider,
   Layer3Boot,
+  Layer4Boot,
   useAppVersionTourReset,
   useSovereignFonts,
   getThemeColors,
@@ -36,11 +38,15 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <Layer3Boot colors={colors}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
+          <Layer4Boot>
+            <HouseholdProvider profile={PROFILE}>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen name="(tabs)" />
+              </Stack>
+            </HouseholdProvider>
+          </Layer4Boot>
         </Layer3Boot>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { onValue, ref } from 'firebase/database';
 import type { Profile } from '../types';
+import { getFirebaseDb, isFirebaseConfigured } from '../firebase/config';
+import { writeShared } from '../firebase/sync';
 import { getTodayPlanDay } from '../utils/todayPlan';
 import type { SleepWindow } from '../utils/sleepWindow';
 import type { ShiftType } from './useSchedule';
@@ -190,8 +193,20 @@ export function buildPlannerItems(
   }));
 }
 
-export function usePlanner(profile: Profile) {
+function plannerItemPath(householdId: string, member: Profile, day: string, itemId: string): string {
+  return `households/${householdId}/planner/${member}/${day}/${itemId}`;
+}
+
+function countDone(data: Record<string, { done?: boolean }> | null): number {
+  if (!data) return 0;
+  return Object.values(data).filter((v) => v?.done).length;
+}
+
+export function usePlanner(profile: Profile, householdId: string | null = null) {
   const [done, setDone] = useState<Record<string, boolean>>({});
+  const [partnerDoneCount, setPartnerDoneCount] = useState(0);
+  const [partnerTotalCount, setPartnerTotalCount] = useState(0);
+  const partnerProfile: Profile = profile === 'imperium' ? 'tending' : 'imperium';
 
   useEffect(() => {
     AsyncStorage.getItem(doneKey(profile)).then((raw) => {
@@ -205,16 +220,54 @@ export function usePlanner(profile: Profile) {
     });
   }, [profile]);
 
+  useEffect(() => {
+    if (!householdId || !isFirebaseConfigured()) return;
+    const day = todayKey();
+    const db = getFirebaseDb();
+    const ownRef = ref(db, `households/${householdId}/planner/${profile}/${day}`);
+    const partnerRef = ref(db, `households/${householdId}/planner/${partnerProfile}/${day}`);
+
+    const unsubOwn = onValue(ownRef, (snap) => {
+      const data = snap.val() as Record<string, { done?: boolean }> | null;
+      if (!data) return;
+      setDone((prev) => {
+        const merged = { ...prev };
+        Object.entries(data).forEach(([id, val]) => {
+          if (typeof val?.done === 'boolean') merged[id] = val.done;
+        });
+        return merged;
+      });
+    });
+
+    const unsubPartner = onValue(partnerRef, (snap) => {
+      const data = snap.val() as Record<string, { done?: boolean }> | null;
+      setPartnerDoneCount(countDone(data));
+      setPartnerTotalCount(data ? Object.keys(data).length : 0);
+    });
+
+    return () => {
+      unsubOwn();
+      unsubPartner();
+    };
+  }, [householdId, partnerProfile, profile]);
+
   const toggleDone = useCallback(
     async (id: string) => {
       setDone((prev) => {
-        const next = { ...prev, [id]: !prev[id] };
-        AsyncStorage.setItem(doneKey(profile), JSON.stringify(next));
+        const nextVal = !prev[id];
+        const next = { ...prev, [id]: nextVal };
+        void AsyncStorage.setItem(doneKey(profile), JSON.stringify(next));
+        if (householdId && isFirebaseConfigured()) {
+          void writeShared(plannerItemPath(householdId, profile, todayKey(), id), {
+            done: nextVal,
+            completedAt: Date.now(),
+          });
+        }
         return next;
       });
     },
-    [profile]
+    [householdId, profile]
   );
 
-  return { done, toggleDone };
+  return { done, toggleDone, partnerDoneCount, partnerTotalCount };
 }

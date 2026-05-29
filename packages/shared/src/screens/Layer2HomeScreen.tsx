@@ -7,19 +7,24 @@ import { getTodayQuote } from '../data/quotes';
 import { useHydration } from '../hooks/useHydration';
 import { useSchedule } from '../hooks/useSchedule';
 import { useShiftPlanner } from '../hooks/useShiftPlanner';
+import { usePlanner } from '../hooks/usePlanner';
+import { useHouseholdContext } from '../context/HouseholdContext';
 import { SvgIcon } from '../ui/SvgIcon';
+import { SyncStatusDot } from '../ui/SyncStatusDot';
+import { PartnerCard } from './PartnerCard';
 import { MoodModal } from './MoodModal';
 
 type Props = {
   profile: Profile;
   colors: ThemeColors;
-  householdId: string | null;
+  partnerApkUrl: string;
   onOpenHolyDays?: () => void;
 };
 
-export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays }: Props) {
+export function Layer2HomeScreen({ profile, colors, partnerApkUrl, onOpenHolyDays }: Props) {
   const pc = getProfileConfig(profile);
   const quote = getTodayQuote(profile);
+  const hh = useHouseholdContext();
   const { loggedOz, targetOz, percent, addOz, removeOz, resetToday } = useHydration(profile);
   const {
     sleepWindow,
@@ -31,6 +36,7 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
     isWorkDay,
   } = useSchedule();
   const { schedule } = useShiftPlanner(profile, shiftType, isWorkDay, sleepWindow.wake);
+  const { partnerDoneCount, partnerTotalCount } = usePlanner(profile, hh.householdId);
   const [showMood, setShowMood] = useState(false);
   const [hub, setHub] = useState<'mind' | 'body' | 'soul' | null>(null);
   const imp = profile === 'imperium';
@@ -38,12 +44,28 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
   return (
     <>
       <ScrollView style={[styles.root, { backgroundColor: colors.background }]} contentContainerStyle={styles.pad}>
-        <Text style={[styles.title, { color: colors.accent }]}>{pc.displayName}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.accent }]}>{pc.displayName}</Text>
+          <SyncStatusDot status={hh.syncStatus} colors={colors} onRetry={() => void hh.retrySync()} />
+        </View>
         <Text style={[styles.person, { color: colors.textMuted }]}>{pc.personName} · {pc.practitionerTitle}</Text>
+
+        <PartnerCard
+          profile={profile}
+          colors={colors}
+          householdId={hh.householdId}
+          partnerJoined={hh.partnerJoined}
+          partnerName={hh.partnerName}
+          partnerDoneCount={partnerDoneCount}
+          partnerTotalCount={partnerTotalCount}
+          syncStatus={hh.syncStatus}
+          joinCodeFormatted={hh.joinCodeFormatted}
+          partnerApkUrl={partnerApkUrl}
+          onRetrySync={() => void hh.retrySync()}
+        />
 
         <View style={[styles.shiftRow, { borderColor: colors.border }]}>
           <Text style={[styles.shift, { color: '#44aa44' }]}>{shiftLabel}</Text>
-          <Text style={[styles.shiftPartner, { color: '#c47878' }]}>Partner: {pc.partnerName}</Text>
         </View>
         <Text style={[styles.sleepLine, { color: colors.textMuted }]}>
           WAKE {sleepWindow.wake} · SLEEP {sleepWindow.sleep}
@@ -91,9 +113,6 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
               <SvgIcon name="brain" size={16} color="#9060f0" />
               <Text style={{ color: '#9060f0', fontSize: 11, letterSpacing: 1 }}>MOOD TRACKER</Text>
             </Pressable>
-            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>
-              Declaration, doctrine, and shadow work open from Mind in a future layer.
-            </Text>
           </View>
         )}
 
@@ -129,9 +148,6 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
               <SvgIcon name="star" size={16} color={colors.accent} />
               <Text style={{ color: colors.accent, fontSize: 11, letterSpacing: 1 }}>HOLY DAYS</Text>
             </Pressable>
-            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8 }}>
-              Rites, partnership, and evening inventory expand in later layers.
-            </Text>
           </View>
         )}
 
@@ -144,7 +160,7 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
           onClose={() => setShowMood(false)}
           profile={profile}
           colors={colors}
-          householdId={householdId}
+          householdId={hh.householdId}
         />
       )}
     </>
@@ -154,11 +170,11 @@ export function Layer2HomeScreen({ profile, colors, householdId, onOpenHolyDays 
 const styles = StyleSheet.create({
   root: { flex: 1 },
   pad: { padding: 16, paddingTop: 48, paddingBottom: 40 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: 20, letterSpacing: 2, textTransform: 'uppercase' },
   person: { fontSize: 12, marginBottom: 12 },
   shiftRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 12 },
   shift: { fontSize: 11, letterSpacing: 1, flex: 1 },
-  shiftPartner: { fontSize: 11 },
   sleepLine: { fontSize: 10, marginBottom: 8 },
   quickRow: { flexDirection: 'row', gap: 6, marginBottom: 10, flexWrap: 'wrap' },
   quickBtn: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6 },

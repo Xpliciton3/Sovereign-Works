@@ -7,17 +7,24 @@ import {
   type GroceryCategoryL2,
 } from '../types/layer2';
 import type { ThemeColors } from '../colors';
+import type { Profile } from '../types';
 import type { CartState } from '../hooks/useCart';
 
 type Props = {
   cart: CartState;
   colors: ThemeColors;
+  viewerProfile: Profile;
   onToggle: (key: string) => void;
   onRemove: (key: string) => void;
   onClearChecked: () => void;
 };
 
-export function GroceryList({ cart, colors, onToggle, onRemove, onClearChecked }: Props) {
+const ADDED_BY_COLOR: Record<Profile, string> = {
+  imperium: '#c9a84c',
+  tending: '#c47878',
+};
+
+export function GroceryList({ cart, colors, viewerProfile, onToggle, onRemove, onClearChecked }: Props) {
   const keys = Object.keys(cart);
   const checkedCount = Object.values(cart).filter((v) => v.checked).length;
 
@@ -64,6 +71,11 @@ export function GroceryList({ cart, colors, onToggle, onRemove, onClearChecked }
                 <Pressable onPress={() => onToggle(k)} style={[styles.check, { borderColor: colors.border }]}>
                   <Text style={{ color: colors.textMuted, fontSize: 10 }}>○</Text>
                 </Pressable>
+                {v.addedBy ? (
+                  <View
+                    style={[styles.addedDot, { backgroundColor: ADDED_BY_COLOR[v.addedBy] ?? colors.textMuted }]}
+                  />
+                ) : null}
                 <Text style={[styles.name, { color: colors.textMuted }]}>{v.name}</Text>
                 <Text style={[styles.amt, { color: colors.textDisabled }]}>
                   {v.count > 1 ? `×${v.count} — ${v.amt}` : v.amt}
@@ -120,6 +132,7 @@ const styles = StyleSheet.create({
   catLabel: { fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
   check: { width: 18, height: 18, borderWidth: 1, borderRadius: 3, alignItems: 'center', justifyContent: 'center' },
+  addedDot: { width: 6, height: 6, borderRadius: 3 },
   name: { flex: 1, fontSize: 14 },
   amt: { fontSize: 11, marginRight: 4 },
   checkedHdr: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 5 },

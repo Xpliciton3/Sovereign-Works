@@ -110,6 +110,7 @@ export interface CartItemL2 {
   unit: GroceryCategoryL2;
   count: number;
   checked: boolean;
+  addedBy?: import('../types').Profile;
 }
 
 export interface DietarySettingsL2 {

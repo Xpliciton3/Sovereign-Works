@@ -5,10 +5,14 @@ import type { ThemeColors } from '../colors';
 import { useDietary } from '../hooks/useDietary';
 import { useAlarms } from '../alarms/useAlarms';
 import { HolyDaysScreen } from './HolyDaysScreen';
+import { HouseholdSettingsPanel } from './HouseholdSettingsPanel';
+import { syncStatusLabel } from '../ui/SyncStatusDot';
+import { useHouseholdContext } from '../context/HouseholdContext';
 
 type Props = {
   profile: Profile;
   colors: ThemeColors;
+  partnerApkUrl: string;
 };
 
 const SECTIONS = [
@@ -19,10 +23,11 @@ const SECTIONS = [
   { id: 'household', label: 'Household' },
 ] as const;
 
-export function Layer2MoreScreen({ profile, colors }: Props) {
+export function Layer2MoreScreen({ profile, colors, partnerApkUrl }: Props) {
   const [section, setSection] = useState<(typeof SECTIONS)[number]['id'] | null>(null);
   const { diet, updateDiet } = useDietary();
   const { notif, saveNotifSettings } = useAlarms(profile);
+  const hh = useHouseholdContext();
 
   if (section === 'holydays') {
     return (
@@ -104,13 +109,11 @@ export function Layer2MoreScreen({ profile, colors }: Props) {
       )}
 
       {section === 'household' && (
-        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 8 }}>
-          Household sync expands in Layer 4.
-        </Text>
+        <HouseholdSettingsPanel profile={profile} colors={colors} partnerApkUrl={partnerApkUrl} />
       )}
 
       <Text style={{ color: colors.textDisabled, fontSize: 10, marginTop: 20 }}>
-        v1.0.12 · Layer 3 complete (pre–Layer 4)
+        v1.0.13 · Layer 4 household sync · {syncStatusLabel(hh.syncStatus)}
       </Text>
     </ScrollView>
   );

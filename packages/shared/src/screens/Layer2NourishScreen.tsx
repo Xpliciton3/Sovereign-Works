@@ -4,6 +4,7 @@ import type { Profile } from '../types';
 import type { ThemeColors } from '../colors';
 import { WEEK_PLAN } from '../data/weekPlan';
 import { RECIPES } from '../data/recipes';
+import { useHouseholdContext } from '../context/HouseholdContext';
 import { useCart } from '../hooks/useCart';
 import { useDietary } from '../hooks/useDietary';
 import { MealIngredients } from './MealIngredients';
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function Layer2NourishScreen({ profile, colors }: Props) {
+  const hh = useHouseholdContext();
   const accent = TAB_COLORS[profile].nourish;
   const [nourTab, setNourTab] = useState<'plan' | 'cart'>('plan');
   const [expWeek, setExpWeek] = useState<number | null>(null);
@@ -34,7 +36,7 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
     removeCartItem,
     toggleChecked,
     clearChecked,
-  } = useCart();
+  } = useCart(profile, hh.householdId);
 
   const addAllWeek = (wi: number) => {
     const wk = WEEK_PLAN[wi];
@@ -186,6 +188,7 @@ export function Layer2NourishScreen({ profile, colors }: Props) {
         <GroceryList
           cart={cart}
           colors={colors}
+          viewerProfile={profile}
           onToggle={toggleChecked}
           onRemove={removeCartItem}
           onClearChecked={clearChecked}

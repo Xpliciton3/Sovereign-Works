@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { get, ref, set } from 'firebase/database';
+import { onValue, ref } from 'firebase/database';
 import { getFirebaseDb, isFirebaseConfigured } from '../firebase/config';
-import { scoreBracketLabel, scoreToDot } from '../content/moodTranslations';
+import { writeShared } from '../firebase/sync';
+import { getMoodTranslation, scoreBracketLabel, scoreToDot } from '../content/moodTranslations';
 import type { Profile } from '../types';
 import { translateMoodWithGroq } from '../ai/groqMood';
 
@@ -10,14 +11,21 @@ function dateKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function moodPath(householdId: string, memberProfile: Profile, day: string): string {
+  return `households/${householdId}/mood/${memberProfile}/${day}`;
+}
+
 export function useMood(profile: Profile, householdId: string | null) {
   const [score, setScore] = useState(3);
   const [note, setNote] = useState('');
   const [partnerDot, setPartnerDot] = useState<number | null>(null);
-  const [partnerTranslation, setPartnerTranslation] = useState<string | null>(null);
   const [history, setHistory] = useState<number[]>([3, 2, 4, 2, 3, 5, 3]);
   const [previewTranslation, setPreviewTranslation] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
+
+  const partnerProfile: Profile = profile === 'imperium' ? 'tending' : 'imperium';
+  const partnerTranslation =
+    partnerDot !== null ? getMoodTranslation(partnerDot * 2, profile) : null;
 
   useEffect(() => {
     AsyncStorage.getItem(`mood_history_${profile}`).then((raw) => {
@@ -33,27 +41,32 @@ export function useMood(profile: Profile, householdId: string | null) {
 
   useEffect(() => {
     if (!householdId || !isFirebaseConfigured()) return;
-    const partner = profile === 'imperium' ? 'tending' : 'imperium';
-    const path = `households/${householdId}/mood/${partner}/translatedEntries/${dateKey()}`;
+    const path = moodPath(householdId, partnerProfile, dateKey());
     const db = getFirebaseDb();
-    get(ref(db, path))
-      .then((snap) => {
-        const val = snap.val();
-        if (val && typeof val.dotScore === 'number') setPartnerDot(val.dotScore);
-        if (val && typeof val.translatedText === 'string') setPartnerTranslation(val.translatedText);
-      })
-      .catch(() => {});
-  }, [householdId, profile]);
+    return onValue(ref(db, path), (snap) => {
+      const val = snap.val() as { dotScore?: number } | null;
+      setPartnerDot(typeof val?.dotScore === 'number' ? val.dotScore : null);
+    });
+  }, [householdId, partnerProfile]);
 
   const bracket = scoreBracketLabel(score);
   const dotScore = scoreToDot(score);
+
+  const syncDotScore = useCallback(async () => {
+    if (!householdId || !isFirebaseConfigured()) return;
+    await writeShared(moodPath(householdId, profile, dateKey()), {
+      dotScore,
+      updatedAt: Date.now(),
+    });
+  }, [dotScore, householdId, profile]);
 
   const saveLocalMood = useCallback(async () => {
     const nextHist = [...history.slice(-6), score];
     setHistory(nextHist);
     await AsyncStorage.setItem(`mood_history_${profile}`, JSON.stringify(nextHist));
     await AsyncStorage.setItem(`mood_note_${profile}_${dateKey()}`, note);
-  }, [history, note, profile, score]);
+    await syncDotScore();
+  }, [history, note, profile, score, syncDotScore]);
 
   const generatePreview = useCallback(async () => {
     if (!note.trim()) {
@@ -74,21 +87,6 @@ export function useMood(profile: Profile, householdId: string | null) {
     }
   }, [note, profile, score]);
 
-  const sendPreviewToPartner = useCallback(async () => {
-    if (!householdId || !isFirebaseConfigured()) return;
-    if (!previewTranslation.trim()) return;
-    if (householdId && isFirebaseConfigured()) {
-      const db = getFirebaseDb();
-      const path = `households/${householdId}/mood/${profile}/translatedEntries/${dateKey()}`;
-      await set(ref(db, path), {
-        translatedText: previewTranslation,
-        dotScore,
-        approved: true,
-        timestamp: Date.now(),
-      });
-    }
-  }, [dotScore, householdId, previewTranslation, profile]);
-
   return {
     score,
     setScore,
@@ -103,7 +101,6 @@ export function useMood(profile: Profile, householdId: string | null) {
     isTranslating,
     saveLocalMood,
     generatePreview,
-    sendPreviewToPartner,
     clearPreview: () => setPreviewTranslation(''),
   };
 }

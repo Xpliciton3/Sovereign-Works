@@ -26,8 +26,9 @@ function generateJoinCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-function generateHouseholdId(): string {
-  return `hh_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+function generateHouseholdId(tradition: Profile): string {
+  const prefix = tradition === 'imperium' ? 'IMP' : 'TEND';
+  return `${prefix}-${String(Math.floor(100000 + Math.random() * 900000))}`;
 }
 
 export function formatJoinCode(code: string): string {
@@ -46,7 +47,7 @@ export async function createHousehold(
 ): Promise<{ householdId: string; joinCode: string; joinCodeFormatted: string }> {
   await initAuth();
   const db = getFirebaseDb();
-  const householdId = generateHouseholdId();
+  const householdId = generateHouseholdId(member.profile);
   const joinCode = generateJoinCode();
   const now = Date.now();
 
